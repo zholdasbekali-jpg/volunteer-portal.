@@ -1,0 +1,38 @@
+erDiagram
+    users ||--o{ events : organizes
+    users ||--o{ registrations : registers
+    events ||--o{ registrations : has
+    registrations ||--o| certificates : issues
+    users {
+        INTEGER id PK
+        TEXT full_name
+        TEXT email UK
+        TEXT password_hash
+        TEXT role
+        TEXT created_at
+    }
+    events {
+        INTEGER id PK
+        TEXT title
+        TEXT description
+        TEXT location
+        TEXT event_date
+        INTEGER capacity
+        INTEGER organizer_id FK
+        TEXT status
+        TEXT created_at
+    }
+    registrations {
+        INTEGER id PK
+        INTEGER user_id FK
+        INTEGER event_id FK
+        TEXT status
+        TEXT registered_at
+    }
+    certificates {
+        INTEGER id PK
+        INTEGER registration_id FK
+        TEXT certificate_code UK
+        TEXT issued_at
+        TEXT pdf_path
+    }

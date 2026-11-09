@@ -1,0 +1,29 @@
+# Виртуальная среда
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Құпия деректер және жергілікті деректер қоры
+.env
+instance/*
+!instance/.gitkeep
+*.db
+*.sqlite3
+
+# Жасалған PDF-сертификаттар
+generated/certificates/*
+!generated/certificates/.gitkeep
+
+# IDE / ОС
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

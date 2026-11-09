@@ -1,0 +1,7 @@
+Flask>=3.0,<4
+Flask-Login>=0.6.3,<0.7
+Werkzeug>=3.0,<4
+ReportLab>=4.0
+matplotlib>=3.8
+pytest>=8.0
+pytest-cov>=5.0

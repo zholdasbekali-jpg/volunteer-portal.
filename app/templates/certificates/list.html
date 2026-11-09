@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Сертификаттар{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Менің сертификаттарым</h1>
+<p class="text-muted mb-4">Сертификат қатысуыңыз ұйымдастырушымен расталған іс-шаралар бойынша беріледі.</p>
+{% if items %}
+  <div class="row g-3">
+    {% for c in items %}
+      <div class="col-md-6">
+        <div class="vp-card vp-card-pad cert-card h-100 d-flex flex-column">
+          <h2 class="h5">{{ c.title }}</h2>
+          <div class="meta mb-1"><i class="bi bi-calendar-event"></i>{{ c.event_date | kz_date }}</div>
+          {% if c.certificate_code %}
+            <div class="meta mb-3"><i class="bi bi-upc-scan"></i>№ {{ c.certificate_code }}</div>
+          {% else %}
+            <div class="meta mb-3"><i class="bi bi-info-circle"></i>Жүктеген кезде жасалады</div>
+          {% endif %}
+          <a class="btn btn-primary mt-auto align-self-start" href="{{ url_for('certificates.download', registration_id=c.registration_id) }}"><i class="bi bi-file-earmark-pdf"></i> PDF жүктеу</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="vp-card">{{ m.empty('award', 'Қолжетімді сертификат жоқ. Іс-шараға қатысқаныңыз расталғаннан кейін осы жерде пайда болады.') }}</div>
+{% endif %}
+{% endblock %}

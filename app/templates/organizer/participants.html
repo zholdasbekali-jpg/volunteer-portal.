@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Қатысушылар · {{ event.title }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">Панель</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.title }}</a></li>
+  <li class="breadcrumb-item active">Қатысушылар</li>
+</ol></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 mb-1">Қатысушыларды басқару</h1>
+    <div class="text-muted">{{ event.title }} · {{ event.event_date | kz_datetime }} · тіркелген: {{ regs | length }} / {{ event.capacity }}</div></div>
+</div>
+{% if regs %}
+<div class="vp-card"><div class="table-responsive"><table class="table vp-table">
+  <thead><tr><th>Ерікті</th><th>Email</th><th>Тіркелген</th><th>Мәртебесі</th><th class="text-end">Қатысуды белгілеу</th></tr></thead>
+  <tbody>
+  {% for r in regs %}
+    <tr>
+      <td class="fw-semibold">{{ r.full_name }}</td>
+      <td>{{ r.email }}</td>
+      <td class="text-nowrap">{{ r.registered_at[:16] | kz_datetime }}</td>
+      <td>{{ m.reg_badge(r.status) }}</td>
+      <td class="text-end text-nowrap">
+        {% for value, label, cls in [('attended', 'Қатысты', 'success'), ('absent', 'Қатыспады', 'danger'), ('pending', 'Расталмаған', 'secondary')] %}
+          {% if r.status != value %}
+          <form method="post" class="d-inline" action="{{ url_for('registrations.set_status', registration_id=r.id) }}">
+            {{ m.csrf() }}<input type="hidden" name="status" value="{{ value }}"><input type="hidden" name="event_id" value="{{ event.id }}">
+            <button class="btn btn-outline-{{ cls }} btn-sm" type="submit">{{ label }}</button>
+          </form>
+          {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div></div>
+{% else %}
+  <div class="vp-card">{{ m.empty('people', 'Әзірге ешкім тіркелмеген.') }}</div>
+{% endif %}
+{% endblock %}

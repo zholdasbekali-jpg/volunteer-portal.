@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Кіру{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="vp-card vp-card-pad">
+    <h1 class="h3 mb-1">Жүйеге кіру</h1>
+    <p class="text-muted mb-4">Аккаунтыңызға кіріңіз</p>
+    <form method="post" class="needs-validation" novalidate>
+      {{ m.csrf() }}
+      <div class="mb-3">
+        <label class="form-label" for="email">Электрондық пошта</label>
+        <input class="form-control" id="email" name="email" type="email" required autocomplete="email" value="{{ form.get('email', '') }}">
+        <div class="invalid-feedback">Дұрыс email енгізіңіз.</div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="password">Құпиясөз</label>
+        <input class="form-control" id="password" name="password" type="password" required autocomplete="current-password">
+        <div class="invalid-feedback">Құпиясөзді енгізіңіз.</div>
+      </div>
+      <button class="btn btn-primary w-100" type="submit" data-loading="Кіруде…">Кіру</button>
+    </form>
+    <p class="text-center text-muted mt-3 mb-0">Аккаунт жоқ па? <a href="{{ url_for('auth.register') }}">Тіркелу</a></p>
+  </div>
+</div>
+{% endblock %}

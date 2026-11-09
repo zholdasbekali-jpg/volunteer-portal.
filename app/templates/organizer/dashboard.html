@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Ұйымдастырушы панелі{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'Барлық іс-шаралар' if current_user.is_admin else 'Менің іс-шараларым' }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> Статистика</a>
+    <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg"></i> Жаңа іс-шара</a>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+  {% for value, label in [(summary.events_total, 'Іс-шара'), (summary.registrations_total, 'Тіркелім'), (summary.attended_total, 'Қатысуы расталған'), (summary.fill_rate ~ '%', 'Толу көрсеткіші')] %}
+    <div class="col-6 col-md-3"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
+  {% endfor %}
+</div>
+{% if events %}
+<div class="vp-card"><div class="table-responsive"><table class="table vp-table">
+  <thead><tr><th>Атауы</th><th>Күні</th><th>Мәртебесі</th><th>Тіркелген</th><th class="text-end">Әрекеттер</th></tr></thead>
+  <tbody>
+  {% for e in events %}
+    <tr>
+      <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a>
+        {% if current_user.is_admin %}<div class="small text-muted">{{ e.organizer_name }}</div>{% endif %}</td>
+      <td class="text-nowrap">{{ e.event_date | kz_datetime }}</td>
+      <td>{{ m.event_badge(e.status) }}</td>
+      <td>{{ e.registered_count }} / {{ e.capacity }} <span class="text-muted small">(қатысты: {{ e.attended_count }})</span></td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=e.id) }}" title="Қатысушылар"><i class="bi bi-people"></i></a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('events.edit', event_id=e.id) }}" title="Өңдеу"><i class="bi bi-pencil"></i></a>
+        {% if e.status == 'published' %}
+          <form method="post" class="d-inline" action="{{ url_for('events.cancel', event_id=e.id) }}" data-confirm="Іс-шараны тоқтатуға сенімдісіз бе? Тіркелу жабылады.">
+            {{ m.csrf() }}<button class="btn btn-outline-warning btn-sm" title="Тоқтату" type="submit"><i class="bi bi-pause-circle"></i></button></form>
+        {% else %}
+          <form method="post" class="d-inline" action="{{ url_for('events.restore', event_id=e.id) }}">
+            {{ m.csrf() }}<button class="btn btn-outline-success btn-sm" title="Қайта жариялау" type="submit"><i class="bi bi-play-circle"></i></button></form>
+        {% endif %}
+        <form method="post" class="d-inline" action="{{ url_for('events.delete', event_id=e.id) }}" data-confirm="Іс-шара және оның барлық тіркелімдері түпкілікті жойылады. Жалғастырасыз ба?">
+          {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" title="Жою" type="submit"><i class="bi bi-trash"></i></button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div></div>
+{% else %}
+  <div class="vp-card">{{ m.empty('calendar-plus', 'Сізде әлі іс-шара жоқ.') }}
+    <div class="text-center pb-4"><a class="btn btn-primary" href="{{ url_for('events.create') }}">Алғашқы іс-шараны құру</a></div></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Іс-шараны өңдеу' if event else 'Жаңа іс-шара' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+  <h1 class="h3 mb-3">{{ 'Іс-шараны өңдеу' if event else 'Жаңа іс-шара құру' }}</h1>
+  <form class="vp-card vp-card-pad needs-validation" method="post" novalidate>
+    {{ m.csrf() }}
+    <div class="mb-3">
+      <label class="form-label" for="title">Атауы *</label>
+      <input class="form-control" id="title" name="title" required minlength="3" maxlength="150" value="{{ form.get('title', '') }}">
+      <div class="invalid-feedback">Атауы кемінде 3 таңба болуы керек.</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="description">Сипаттамасы</label>
+      <textarea class="form-control" id="description" name="description" rows="5" maxlength="5000">{{ form.get('description', '') }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="location">Өтетін орны *</label>
+      <input class="form-control" id="location" name="location" required maxlength="200" value="{{ form.get('location', '') }}">
+      <div class="invalid-feedback">Орынды көрсетіңіз.</div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-7">
+        <label class="form-label" for="event_date">Күні мен уақыты *</label>
+        <input class="form-control" id="event_date" name="event_date" type="datetime-local" required value="{{ form.get('event_date', '') }}">
+        <div class="invalid-feedback">Күні мен уақытын таңдаңыз.</div>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label" for="capacity">Қатысушылардың ең көп саны *</label>
+        <input class="form-control" id="capacity" name="capacity" type="number" min="1" max="10000" required value="{{ form.get('capacity', '') }}">
+        <div class="invalid-feedback">1-ден 10000-ға дейінгі сан.</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit" data-loading="Сақталуда…"><i class="bi bi-check-lg"></i> Сақтау</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('events.organizer_dashboard') }}">Болдырмау</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

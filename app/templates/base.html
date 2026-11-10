@@ -5,16 +5,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Еріктілер порталы{% endblock %} · Еріктілер порталы</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
   <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
 <body>
   {% set ep = request.endpoint or '' %}
-  <nav class="navbar navbar-expand-lg vp-nav sticky-top">
+  <nav class="navbar navbar-expand-lg vp-nav sticky-top" data-bs-theme="dark">
     <div class="container">
       <a class="navbar-brand vp-brand" href="{{ url_for('events.index') }}">
-        <span class="mark"><i class="bi bi-heart-fill"></i></span>Еріктілер порталы
+        <img class="vp-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="QAMQOR — Еріктілер порталы">
       </a>
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Мәзір">
         <span class="navbar-toggler-icon"></span>
@@ -37,14 +38,14 @@
         </ul>
         <div class="d-flex align-items-lg-center gap-2 flex-column flex-lg-row mt-2 mt-lg-0">
           {% if current_user.is_authenticated %}
-            <span class="small text-muted"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
+            <span class="small vp-nav-user"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
               <span class="badge-soft b-role ms-1">{{ current_user.role_label }}</span></span>
             <form method="post" action="{{ url_for('auth.logout') }}">{{ m.csrf() }}
-              <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Шығу</button>
+              <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Шығу</button>
             </form>
           {% else %}
-            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.login') }}">Кіру</a>
-            <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Тіркелу</a>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.login') }}">Кіру</a>
+            <a class="btn btn-gold btn-sm" href="{{ url_for('auth.register') }}">Тіркелу</a>
           {% endif %}
         </div>
       </div>

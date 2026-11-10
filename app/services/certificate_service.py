@@ -155,8 +155,8 @@ def _draw_header(c, w, h, t) -> None:
     logo = find_logo()
     if logo:
         try:
-            lw = 200
-            c.drawImage(logo, w / 2 - lw / 2, h - 48 - 122, width=lw, height=122, mask="auto",
+            lw = 230
+            c.drawImage(logo, w / 2 - lw / 2, h - 46 - 120, width=lw, height=120, mask="auto",
                         preserveAspectRatio=True, anchor="c")
             return
         except Exception:  # бүлінген сурет сертификат берілуін тоқтатпауы керек

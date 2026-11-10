@@ -126,6 +126,7 @@ def test_logo_is_used_when_present(ctx, make, tmp_path, monkeypatch):
     kwargs = dict(code="VP-2026-LOGO", volunteer="Асем", event_title="Іс-шара",
                   event_date="2026-05-01 10:00", issued_at="2026-05-02 09:00", organizer="Ұйым")
     plain = str(tmp_path / "plain.pdf")
+    monkeypatch.setattr(cs, "find_logo", lambda: None)
     cs.render_pdf(plain, **kwargs)
 
     from PIL import Image

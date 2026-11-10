@@ -17,13 +17,43 @@ from ..models import REG_ATTENDED
 
 FONT_DIR = Path(__file__).resolve().parent.parent / "static" / "fonts"
 IMAGE_DIR = FONT_DIR.parent / "images"
-LOGO_NAMES = ("logo.png", "logo.jpg", "logo.jpeg")  # осы бумадағы бірінші табылған файл қолданылады
-FONT_REGULAR = "DejaVuSans"
-FONT_BOLD = "DejaVuSans-Bold"
-GREEN = colors.HexColor("#1f7a4d")
-GREEN_DARK = colors.HexColor("#14532d")
-INK = colors.HexColor("#1f2937")
-MUTED = colors.HexColor("#6b7280")
+LOGO_NAMES = ("logo.png", "logo.jpg", "logo.jpeg")  # бірінші табылған файл қолданылады
+SERIF = "DejaVuSerif"
+SERIF_BOLD = "DejaVuSerif-Bold"
+SERIF_ITALIC = "DejaVuSerif-Italic"
+
+# ---- Дизайн параметрлері (QAMQOR стилі): осы жерден түстер мен мәтінді өзгертуге болады ----
+BG = colors.HexColor("#103309")      # қою жасыл фон
+GOLD = colors.HexColor("#d0b470")    # алтын: жиектер, тақырып
+IVORY = colors.HexColor("#f4efe0")   # негізгі мәтін
+PROJECT_HANDLE = "@Qamqor_11"
+CERT_LANG = "kk"                     # "kk" — қазақша, "ru" — орысша мәтін
+TEXTS = {
+    "kk": {
+        "title": "СЕРТИФИКАТ",
+        "awarded": "Осы сертификат табысталады",
+        "reason": ["белсенді қатысқаны, адалдығы және жан жомарттығы үшін,",
+                   "«QAMQOR» волонтерлік жобасының іс-шарасында көрсеткен:"],
+        "event_date": "Өткізілген күні",
+        "issued": "Берілген күні",
+        "organizer": "Ұйымдастырушы",
+        "number": "Сертификат нөмірі",
+        "verify": "Түпнұсқалығын тексеру",
+        "portal": "ЕРІКТІЛЕР ІС-ШАРАЛАРЫ ПОРТАЛЫ",
+    },
+    "ru": {
+        "title": "СЕРТИФИКАТ",
+        "awarded": "Настоящий сертификат вручается",
+        "reason": ["за активное участие, добросовестность и щедрость души,",
+                   "проявленные в мероприятиях волонтёрского проекта «QAMQOR»:"],
+        "event_date": "Дата проведения",
+        "issued": "Дата выдачи",
+        "organizer": "Организатор",
+        "number": "Номер сертификата",
+        "verify": "Проверка подлинности",
+        "portal": "ПОРТАЛ ВОЛОНТЁРСКИХ МЕРОПРИЯТИЙ",
+    },
+}
 _fonts_ready = False
 
 KZ_MONTHS = ["қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым",
@@ -31,12 +61,25 @@ KZ_MONTHS = ["қаңтар", "ақпан", "наурыз", "сәуір", "мам
 
 
 def _register_fonts() -> None:
-    """Қазақ әріптері бар TTF қаріпті бір рет тіркейміз (стандартты Helvetica ә,ғ,қ-ны көрсетпейді)."""
+    """Қазақ әріптері бар TTF қаріптерді бір рет тіркейміз (стандартты Helvetica ә,ғ,қ-ны көрсетпейді)."""
     global _fonts_ready
     if not _fonts_ready:
-        pdfmetrics.registerFont(TTFont(FONT_REGULAR, str(FONT_DIR / "DejaVuSans.ttf")))
-        pdfmetrics.registerFont(TTFont(FONT_BOLD, str(FONT_DIR / "DejaVuSans-Bold.ttf")))
+        for name, file in ((SERIF, "DejaVuSerif.ttf"), (SERIF_BOLD, "DejaVuSerif-Bold.ttf"),
+                           (SERIF_ITALIC, "DejaVuSerif-Italic.ttf")):
+            pdfmetrics.registerFont(TTFont(name, str(FONT_DIR / file)))
         _fonts_ready = True
+
+
+RU_MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня",
+             "июля", "августа", "сентября", "октября", "ноября", "декабря"]
+
+
+def _fmt_date(value: str) -> str:
+    """Күнді CERT_LANG тіліне сай пішімдейді."""
+    if CERT_LANG == "ru":
+        d = datetime.strptime(value[:10], "%Y-%m-%d")
+        return f"{d.day} {RU_MONTHS[d.month - 1]} {d.year} г."
+    return format_date_kz(value)
 
 
 def format_date_kz(value: str) -> str:
@@ -70,85 +113,118 @@ def find_logo():
     return None
 
 
-def _draw_logo(c, h) -> None:
-    """Логотипті сол жақ жоғарғы бұрышқа 70x70 шаршыға сыйғызады (пропорциясы сақталады).
-    Файл жоқ немесе бүлінген болса, сертификат логотипсіз жасалады."""
+def _spaced(c, text, font, size, y, w, space, color):
+    """Әріп аралығы үлкейтілген мәтінді беттің ортасына салады."""
+    width = pdfmetrics.stringWidth(text, font, size) + space * (len(text) - 1)
+    c.saveState()  # әріп аралығы келесі мәтіндерге «ағып» кетпеуі үшін күйді оқшаулаймыз
+    t = c.beginText(w / 2 - width / 2, y)
+    t.setFont(font, size)
+    t.setFillColor(color)
+    t.setCharSpace(space)
+    t.textLine(text)
+    c.drawText(t)
+    c.restoreState()
+
+
+def _heart(c, cx, cy, r):
+    """Тақырып астындағы кішкентай жүрек (контур)."""
+    p = c.beginPath()
+    p.moveTo(cx, cy - r)
+    p.curveTo(cx - 1.6 * r, cy - 0.1 * r, cx - 1.0 * r, cy + 1.1 * r, cx, cy + 0.35 * r)
+    p.curveTo(cx + 1.0 * r, cy + 1.1 * r, cx + 1.6 * r, cy - 0.1 * r, cx, cy - r)
+    c.drawPath(p, stroke=1, fill=0)
+
+
+def _draw_frame(c, w, h):
+    """Фон, бұрыштық доғалар, қосарлы дөңгелектелген алтын жиек."""
+    c.setFillColor(BG)
+    c.rect(0, 0, w, h, stroke=0, fill=1)
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.6)
+    for cx, cy, start in ((0, h, 270), (w, h, 180), (0, 0, 0), (w, 0, 90)):
+        for r in (96, 110):
+            c.arc(cx - r, cy - r, cx + r, cy + r, startAng=start, extent=90)
+    c.setLineWidth(1.8)
+    c.roundRect(28, 28, w - 56, h - 56, 16, stroke=1, fill=0)
+    c.setLineWidth(0.6)
+    c.roundRect(40, 40, w - 80, h - 80, 11, stroke=1, fill=0)
+
+
+def _draw_header(c, w, h, t) -> None:
+    """Жоғарғы орталықта логотип; файл жоқ немесе бүлінген болса — порталдың атауы."""
     logo = find_logo()
-    if not logo:
-        return
-    try:
-        c.drawImage(logo, 62, h - 130, width=70, height=70, mask="auto",
-                    preserveAspectRatio=True, anchor="c")
-    except Exception:  # бүлінген сурет сертификат берілуін тоқтатпауы керек
-        pass
+    if logo:
+        try:
+            lw = 200
+            c.drawImage(logo, w / 2 - lw / 2, h - 48 - 122, width=lw, height=122, mask="auto",
+                        preserveAspectRatio=True, anchor="c")
+            return
+        except Exception:  # бүлінген сурет сертификат берілуін тоқтатпауы керек
+            pass
+    _spaced(c, t["portal"], SERIF_BOLD, 14, h - 100, w, 2, GOLD)
 
 
 def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer) -> None:
-    """Ресми үлгідегі A4 альбомдық сертификатты жасайды."""
+    """QAMQOR стиліндегі A4 альбомдық сертификатты жасайды (мәтін TEXTS[CERT_LANG])."""
     _register_fonts()
+    t = TEXTS[CERT_LANG]
     w, h = landscape(A4)
     c = canvas.Canvas(path, pagesize=(w, h))
-    c.setTitle(f"Сертификат {code}")
-    c.setAuthor("Еріктілер іс-шаралары порталы")
+    c.setTitle(f"{t['title']} {code}")
+    c.setAuthor("QAMQOR")
+    _draw_frame(c, w, h)
+    _draw_header(c, w, h, t)
 
-    # Қосарлы жиек және бұрыштық әшекей
-    c.setStrokeColor(GREEN_DARK)
-    c.setLineWidth(4)
-    c.rect(28, 28, w - 56, h - 56)
-    c.setStrokeColor(GREEN)
+    # Тақырып пен жүрегі бар бөлгіш
+    _spaced(c, t["title"], SERIF_BOLD, 40, h - 250, w, 7, GOLD)
+    c.setStrokeColor(GOLD)
     c.setLineWidth(1)
-    c.rect(40, 40, w - 80, h - 80)
-    c.setFillColor(GREEN)
-    c.rect(28, h - 28 - 14, w - 56, 14, stroke=0, fill=1)  # жоғарғы жасыл жолақ
+    c.line(w / 2 - 190, h - 276, w / 2 - 20, h - 276)
+    c.line(w / 2 + 20, h - 276, w / 2 + 190, h - 276)
+    _heart(c, w / 2, h - 276, 6)
 
-    _draw_logo(c, h)
+    c.setFillColor(IVORY)
+    c.setFont(SERIF, 15)
+    c.drawCentredString(w / 2, h - 308, t["awarded"])
 
-    c.setFillColor(GREEN_DARK)
-    c.setFont(FONT_BOLD, 13)
-    c.drawCentredString(w / 2, h - 85, "ЕРІКТІЛЕР ІС-ШАРАЛАРЫ ПОРТАЛЫ")
-    c.setFillColor(INK)
-    c.setFont(FONT_BOLD, 40)
-    c.drawCentredString(w / 2, h - 145, "СЕРТИФИКАТ")
-    c.setStrokeColor(GREEN)
-    c.setLineWidth(2)
-    c.line(w / 2 - 70, h - 160, w / 2 + 70, h - 160)
+    size = _fit_text(c, volunteer, SERIF_ITALIC, 30, w - 220)
+    c.setFont(SERIF_ITALIC, size)
+    c.drawCentredString(w / 2, h - 346, volunteer)
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.7)
+    c.line(w / 2 - 250, h - 358, w / 2 + 250, h - 358)
 
-    c.setFillColor(MUTED)
-    c.setFont(FONT_REGULAR, 13)
-    c.drawCentredString(w / 2, h - 195, "Осы сертификат")
+    c.setFillColor(IVORY)
+    c.setFont(SERIF, 12.5)
+    c.drawCentredString(w / 2, h - 386, t["reason"][0])
+    c.drawCentredString(w / 2, h - 404, t["reason"][1])
+    quoted = f"«{event_title}»"
+    size = _fit_text(c, quoted, SERIF_BOLD, 20, w - 160)
+    c.setFillColor(GOLD)
+    c.setFont(SERIF_BOLD, size)
+    c.drawCentredString(w / 2, h - 434, quoted)
+    c.setFillColor(IVORY)
+    c.setFont(SERIF, 11.5)
+    c.drawCentredString(w / 2, h - 456, f"{t['event_date']}: {_fmt_date(event_date)}")
 
-    size = _fit_text(c, volunteer, FONT_BOLD, 30, w - 160)
-    c.setFillColor(GREEN_DARK)
-    c.setFont(FONT_BOLD, size)
-    c.drawCentredString(w / 2, h - 235, volunteer)
-    c.setStrokeColor(MUTED)
-    c.setLineWidth(0.5)
-    c.line(110, h - 245, w - 110, h - 245)
+    c.setFillColor(GOLD)
+    c.setFont(SERIF, 12)
+    c.drawCentredString(w / 2, 100, PROJECT_HANDLE)
 
-    c.setFillColor(INK)
-    c.setFont(FONT_REGULAR, 13)
-    c.drawCentredString(w / 2, h - 275, "ерікті ретінде келесі іс-шараға белсенді қатысқаны үшін табысталды:")
-    size = _fit_text(c, f"«{event_title}»", FONT_BOLD, 22, w - 160)
-    c.setFont(FONT_BOLD, size)
-    c.drawCentredString(w / 2, h - 315, f"«{event_title}»")
-    c.setFont(FONT_REGULAR, 13)
-    c.setFillColor(MUTED)
-    c.drawCentredString(w / 2, h - 345, f"Өткізілген күні: {format_date_kz(event_date)}")
-
-    # Төменгі блок: нөмір, берілген күні, ұйымдастырушы
-    y = 110
-    c.setFillColor(INK)
-    c.setFont(FONT_REGULAR, 10)
-    c.drawString(80, y + 18, f"Сертификат нөмірі: {code}")
-    c.drawString(80, y, f"Берілген күні: {format_date_kz(issued_at)}")
-    c.setStrokeColor(INK)
+    # Төменгі қатар: берілген күні | нөмір және тексеру | ұйымдастырушы
+    c.setStrokeColor(GOLD)
     c.setLineWidth(0.6)
-    c.line(w - 300, y + 14, w - 80, y + 14)
-    c.setFont(FONT_REGULAR, 10)
-    c.drawCentredString(w - 190, y, f"Ұйымдастырушы: {organizer}")
-    c.setFillColor(MUTED)
-    c.setFont(FONT_REGULAR, 8)
-    c.drawCentredString(w / 2, 52, f"Түпнұсқалығын тексеру: /verify/{code}")
+    c.line(80, 76, 290, 76)
+    c.line(w - 290, 76, w - 80, 76)
+    c.setFillColor(IVORY)
+    c.setFont(SERIF, 10)
+    c.drawString(80, 62, f"{t['issued']}: {_fmt_date(issued_at)}")
+    org = f"{t['organizer']}: {organizer}"
+    c.drawRightString(w - 80, 62, org if pdfmetrics.stringWidth(org, SERIF, 10) <= 210 else organizer)
+    c.setFillColor(GOLD)
+    c.setFont(SERIF, 8)
+    c.drawCentredString(w / 2, 66, f"{t['number']}: {code}")
+    c.drawCentredString(w / 2, 54, f"{t['verify']}: /verify/{code}")
     c.showPage()
     c.save()
 

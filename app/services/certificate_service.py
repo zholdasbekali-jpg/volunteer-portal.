@@ -16,6 +16,8 @@ from ..errors import Conflict, NotFound, PermissionDenied
 from ..models import REG_ATTENDED
 
 FONT_DIR = Path(__file__).resolve().parent.parent / "static" / "fonts"
+IMAGE_DIR = FONT_DIR.parent / "images"
+LOGO_NAMES = ("logo.png", "logo.jpg", "logo.jpeg")  # осы бумадағы бірінші табылған файл қолданылады
 FONT_REGULAR = "DejaVuSans"
 FONT_BOLD = "DejaVuSans-Bold"
 GREEN = colors.HexColor("#1f7a4d")
@@ -59,6 +61,28 @@ def _fit_text(c, text, font, size, max_width):
     return size
 
 
+def find_logo():
+    """app/static/images/ ішіндегі logo.png/jpg жолын қайтарады, жоқ болса None."""
+    for name in LOGO_NAMES:
+        path = IMAGE_DIR / name
+        if path.exists():
+            return str(path)
+    return None
+
+
+def _draw_logo(c, h) -> None:
+    """Логотипті сол жақ жоғарғы бұрышқа 70x70 шаршыға сыйғызады (пропорциясы сақталады).
+    Файл жоқ немесе бүлінген болса, сертификат логотипсіз жасалады."""
+    logo = find_logo()
+    if not logo:
+        return
+    try:
+        c.drawImage(logo, 62, h - 130, width=70, height=70, mask="auto",
+                    preserveAspectRatio=True, anchor="c")
+    except Exception:  # бүлінген сурет сертификат берілуін тоқтатпауы керек
+        pass
+
+
 def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer) -> None:
     """Ресми үлгідегі A4 альбомдық сертификатты жасайды."""
     _register_fonts()
@@ -76,6 +100,8 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.rect(40, 40, w - 80, h - 80)
     c.setFillColor(GREEN)
     c.rect(28, h - 28 - 14, w - 56, 14, stroke=0, fill=1)  # жоғарғы жасыл жолақ
+
+    _draw_logo(c, h)
 
     c.setFillColor(GREEN_DARK)
     c.setFont(FONT_BOLD, 13)

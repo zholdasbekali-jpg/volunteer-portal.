@@ -118,3 +118,27 @@ def test_http_verify_page(client, make):
     code = cs.issue_certificate(vol, rid)["certificate_code"]
     assert "түпнұсқа" in client.get(f"/verify/{code}").get_data(as_text=True)
     assert "табылмады" in client.get("/verify/VP-0-NOPE").get_data(as_text=True)
+
+
+def test_logo_is_used_when_present(ctx, make, tmp_path, monkeypatch):
+    """logo.png болса, ол PDF-ке қосылады (файл үлкейеді); бүлінген логотип PDF-ті бұзбайды."""
+    from reportlab.pdfgen import canvas as rl_canvas
+    kwargs = dict(code="VP-2026-LOGO", volunteer="Асем", event_title="Іс-шара",
+                  event_date="2026-05-01 10:00", issued_at="2026-05-02 09:00", organizer="Ұйым")
+    plain = str(tmp_path / "plain.pdf")
+    cs.render_pdf(plain, **kwargs)
+
+    from PIL import Image
+    logo = tmp_path / "logo.png"
+    Image.effect_noise((200, 200), 80).convert("RGB").save(logo)
+    monkeypatch.setattr(cs, "find_logo", lambda: str(logo))
+    with_logo = str(tmp_path / "with_logo.pdf")
+    cs.render_pdf(with_logo, **kwargs)
+    assert os.path.getsize(with_logo) > os.path.getsize(plain)
+
+    bad = tmp_path / "bad.png"
+    bad.write_bytes(b"not an image")
+    monkeypatch.setattr(cs, "find_logo", lambda: str(bad))
+    broken = str(tmp_path / "broken.pdf")
+    cs.render_pdf(broken, **kwargs)
+    assert open(broken, "rb").read().startswith(b"%PDF")

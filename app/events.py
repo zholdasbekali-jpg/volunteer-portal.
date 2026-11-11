@@ -4,11 +4,11 @@ from flask_login import current_user
 
 from .auth import roles_required
 from .errors import ServiceError
-from .models import ROLE_ADMIN, ROLE_ORGANIZER
+from .models import CITIES, ROLE_ADMIN, ROLE_ORGANIZER
 from .services import certificate_service, event_service, registration_service, statistics_service
 
 bp = Blueprint("events", __name__)
-STATUS_FILTERS = (("", "Барлығы (жарияланған)"), ("upcoming", "Алдағы"),
+STATUS_FILTERS = (("", "Барлығы"), ("upcoming", "Алдағы"),
                   ("past", "Өткен"), ("cancelled", "Тоқтатылған"))
 
 
@@ -24,11 +24,14 @@ def catalog():
     q = request.args.get("q", "").strip()
     date = request.args.get("date", "").strip()
     status = request.args.get("status", "").strip()
+    city = request.args.get("city", "").strip()
+    if city not in CITIES:
+        city = ""
     if status not in {s for s, _ in STATUS_FILTERS}:
         status = ""
     events = []
     try:
-        events = event_service.search_events(q, date, status)
+        events = event_service.search_events(q, date, status, city)
     except ServiceError as exc:
         flash(exc.message, "warning")
     # Сүзгі қолданылмаса — алдағы және өткенді бөлек көрсетеміз
@@ -38,7 +41,8 @@ def catalog():
     else:
         groups = [(dict(STATUS_FILTERS)[status] + " іс-шаралар", events)]
     return render_template("events/list.html", groups=groups, total=len(events),
-                           q=q, date=date, status=status, status_filters=STATUS_FILTERS)
+                           q=q, date=date, status=status, city=city, cities=CITIES,
+                           status_filters=STATUS_FILTERS)
 
 
 @bp.route("/events/<int:event_id>")
@@ -77,7 +81,7 @@ def create():
             return redirect(url_for("events.detail", event_id=event_id))
         except ServiceError as exc:
             flash(exc.message, "danger")
-    return render_template("organizer/event_form.html", form=form, event=None)
+    return render_template("organizer/event_form.html", form=form, event=None, cities=CITIES)
 
 
 @bp.route("/organizer/events/<int:event_id>/edit", methods=["GET", "POST"])
@@ -88,7 +92,7 @@ def edit(event_id):
         abort(404)
     if not event_service.can_manage(event, current_user):
         abort(403)  # басқа ұйымдастырушының іс-шарасы
-    form = {k: event[k] for k in ("title", "description", "location", "capacity")}
+    form = {k: event[k] for k in ("title", "description", "city", "location", "capacity")}
     form["event_date"] = event["event_date"].replace(" ", "T")
     if request.method == "POST":
         form = request.form
@@ -98,7 +102,7 @@ def edit(event_id):
             return redirect(url_for("events.detail", event_id=event_id))
         except ServiceError as exc:
             flash(exc.message, "danger")
-    return render_template("organizer/event_form.html", form=form, event=event)
+    return render_template("organizer/event_form.html", form=form, event=event, cities=CITIES)
 
 
 def _manage_action(event_id, action, ok_message):

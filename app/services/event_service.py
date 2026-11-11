@@ -3,7 +3,7 @@ from datetime import datetime
 
 from ..database import get_db, transaction
 from ..errors import NotFound, PermissionDenied, ValidationError
-from ..models import EVENT_CANCELLED, EVENT_PUBLISHED, ROLE_ADMIN, ROLE_ORGANIZER
+from ..models import CITIES, EVENT_CANCELLED, EVENT_PUBLISHED, ROLE_ADMIN, ROLE_ORGANIZER
 
 DATE_FMT = "%Y-%m-%d %H:%M"
 MAX_CAPACITY = 10000
@@ -36,8 +36,11 @@ def validate_event_data(data: dict, require_future: bool) -> dict:
         raise ValidationError("Атауы міндетті (кемінде 3 таңба).")
     if len(title) > 150:
         raise ValidationError("Атауы тым ұзын (ең көбі 150 таңба).")
+    city = (data.get("city") or "").strip()
+    if city not in CITIES:
+        raise ValidationError("Қаланы тізімнен таңдаңыз.")
     if not location:
-        raise ValidationError("Өтетін орны міндетті түрде көрсетілуі керек.")
+        raise ValidationError("Мекенжайы (көше, ғимарат) міндетті түрде көрсетілуі керек.")
     if len(location) > 200:
         raise ValidationError("Орын атауы тым ұзын (ең көбі 200 таңба).")
     if len(description) > 5000:
@@ -51,7 +54,7 @@ def validate_event_data(data: dict, require_future: bool) -> dict:
         raise ValidationError("Қатысушылардың ең көп саны бүтін сан болуы керек.")
     if capacity < 1 or capacity > MAX_CAPACITY:
         raise ValidationError(f"Қатысушылар саны 1 мен {MAX_CAPACITY} аралығында болуы керек.")
-    return {"title": title, "description": description, "location": location,
+    return {"title": title, "description": description, "city": city, "location": location,
             "event_date": when.strftime(DATE_FMT), "capacity": capacity}
 
 
@@ -79,9 +82,9 @@ def create_event(actor, data: dict) -> int:
     clean = validate_event_data(data, require_future=True)
     with transaction() as db:
         cur = db.execute(
-            """INSERT INTO events (title, description, location, event_date, capacity, organizer_id)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (clean["title"], clean["description"], clean["location"],
+            """INSERT INTO events (title, description, city, location, event_date, capacity, organizer_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (clean["title"], clean["description"], clean["city"], clean["location"],
              clean["event_date"], clean["capacity"], actor["id"]),
         )
         return cur.lastrowid
@@ -97,9 +100,9 @@ def update_event(actor, event_id: int, data: dict) -> None:
             raise ValidationError(
                 f"Қатысушылар санын {taken}-тен азайтуға болмайды: осынша эріктілер тіркелген.")
         db.execute(
-            """UPDATE events SET title = ?, description = ?, location = ?,
+            """UPDATE events SET title = ?, description = ?, city = ?, location = ?,
                                  event_date = ?, capacity = ? WHERE id = ?""",
-            (clean["title"], clean["description"], clean["location"],
+            (clean["title"], clean["description"], clean["city"], clean["location"],
              clean["event_date"], clean["capacity"], event_id),
         )
 
@@ -137,12 +140,18 @@ def now_str() -> str:
     return datetime.now().strftime(DATE_FMT)
 
 
+def full_address(event) -> str:
+    """'Қызылорда, Орталық саябақ' — қала мен мекенжай бірге (қала жоқ ескі жазбаларда тек мекенжай)."""
+    city = event["city"] if "city" in event.keys() else ""
+    return f"{city}, {event['location']}" if city else event["location"]
+
+
 def is_past(event) -> bool:
     return parse_event_date(event["event_date"]) <= datetime.now()
 
 
-def search_events(q: str = "", date: str = "", status: str = ""):
-    """Каталог. q — атауы бойынша іздеу; date — 'YYYY-MM-DD'; status:
+def search_events(q: str = "", date: str = "", status: str = "", city: str = ""):
+    """Каталог. q — атауы/мекенжайы/қаласы бойынша іздеу; city — қала (CITIES); date — 'YYYY-MM-DD'; status:
     '' (жарияланғандар), 'upcoming', 'past', 'cancelled'. Тізім күні бойынша сұрыпталады."""
     now = datetime.now().strftime(DATE_FMT)
     sql = _EVENT_SELECT + " WHERE 1=1"
@@ -163,8 +172,12 @@ def search_events(q: str = "", date: str = "", status: str = ""):
     if q:
         # LIKE арнайы таңбаларын экрандаймыз (% және _ әріп ретінде ізделеді)
         escaped = q.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        sql += " AND (PYLOWER(e.title) LIKE ? ESCAPE '\\' OR PYLOWER(e.location) LIKE ? ESCAPE '\\')"
-        params += [f"%{escaped}%", f"%{escaped}%"]
+        sql += (" AND (PYLOWER(e.title) LIKE ? ESCAPE '\\' OR PYLOWER(e.location) LIKE ? ESCAPE '\\'"
+                " OR PYLOWER(e.city) LIKE ? ESCAPE '\\')")
+        params += [f"%{escaped}%"] * 3
+    if city in CITIES:  # белгісіз қала сүзгісі елеусіз қалады
+        sql += " AND e.city = ?"
+        params.append(city)
     date = (date or "").strip()
     if date:
         try:

@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS events (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     title        TEXT NOT NULL,
     description  TEXT NOT NULL DEFAULT '',
-    location     TEXT NOT NULL,
+    city         TEXT NOT NULL DEFAULT '',                 -- қала (CITIES тізімінен)
+    location     TEXT NOT NULL,                       -- мекенжай: көше, ғимарат, орын
     event_date   TEXT NOT NULL,                       -- 'YYYY-MM-DD HH:MM'
     capacity     INTEGER NOT NULL CHECK (capacity > 0),
     organizer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -81,8 +82,13 @@ def close_db(_exc=None) -> None:
 
 
 def init_db() -> None:
-    """Кестелерді құрады (бар болса, тимейді)."""
-    get_db().executescript(SCHEMA)
+    """Кестелерді құрады (бар болса, тимейді) және ескі қорларды жаңа схемаға көшіреді."""
+    db = get_db()
+    db.executescript(SCHEMA)
+    # Миграция: city бағаны қосылғанға дейін жасалған қорларда ол жоқ — деректерді жоғалтпай қосамыз
+    if "city" not in {r["name"] for r in db.execute("PRAGMA table_info(events)")}:
+        db.execute("ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT ''")
+    db.execute("CREATE INDEX IF NOT EXISTS idx_events_city ON events(city)")
 
 
 @contextmanager

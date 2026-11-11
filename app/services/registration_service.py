@@ -83,7 +83,7 @@ def set_attendance(actor, registration_id: int, status: str) -> list:
 
 _REG_SELECT = """
     SELECT r.id, r.status, r.registered_at, r.user_id, r.event_id,
-           e.title, e.event_date, e.location, e.status AS event_status,
+           e.title, e.event_date, e.city, e.location, e.status AS event_status,
            c.certificate_code
     FROM registrations r
     JOIN events e ON e.id = r.event_id

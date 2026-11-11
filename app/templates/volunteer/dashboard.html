@@ -15,7 +15,7 @@
         <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=r.event_id) }}">{{ r.title }}</a>
           {% if r.event_status == 'cancelled' %}<span class="badge-soft b-cancelled ms-1">Тоқтатылған</span>{% endif %}</td>
         <td class="text-nowrap">{{ r.event_date | kz_datetime }}</td>
-        <td>{{ r.location }}</td>
+        <td>{{ r | full_address }}</td>
         <td>{{ m.reg_badge(r.status) }}</td>
         <td class="text-end text-nowrap">
           {% if r.status == 'attended' %}

@@ -50,13 +50,13 @@ class Factory:
         uid = auth_service.create_user_unchecked(name or f"Тест Пайдаланушы {self.n}", email, PASSWORD, role)
         return {"id": uid, "role": role, "email": email}
 
-    def event(self, organizer, capacity=3, days=5, status="published", title=None):
+    def event(self, organizer, capacity=3, days=5, status="published", title=None, city="Қызылорда"):
         self.n += 1
         with transaction() as db:
             return db.execute(
-                "INSERT INTO events (title, description, location, event_date, capacity, organizer_id, status)"
-                " VALUES (?,?,?,?,?,?,?)",
-                (title or f"Іс-шара {self.n}", "Сипаттама", "Қызылорда", when(days), capacity,
+                "INSERT INTO events (title, description, city, location, event_date, capacity, organizer_id, status)"
+                " VALUES (?,?,?,?,?,?,?,?)",
+                (title or f"Іс-шара {self.n}", "Сипаттама", city, "Орталық көше, 1", when(days), capacity,
                  organizer["id"], status)).lastrowid
 
     def registration(self, volunteer, event_id, status="pending"):

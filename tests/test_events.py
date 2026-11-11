@@ -7,7 +7,7 @@ from conftest import PASSWORD, login, when
 
 
 def form(**kw):
-    data = {"title": "Саябақты тазалау", "description": "Сипаттама", "location": "Орталық саябақ",
+    data = {"title": "Саябақты тазалау", "description": "Сипаттама", "city": "Қызылорда", "location": "Орталық саябақ",
             "event_date": when(7).replace(" ", "T"), "capacity": "10"}
     data.update(kw)
     return data
@@ -22,7 +22,7 @@ def test_create_event(ctx, make):
 
 
 @pytest.mark.parametrize("bad", [
-    {"title": ""}, {"title": "ab"}, {"location": ""}, {"capacity": "0"}, {"capacity": "-3"},
+    {"title": ""}, {"title": "ab"}, {"location": ""}, {"city": ""}, {"city": "Атлантида"}, {"capacity": "0"}, {"capacity": "-3"},
     {"capacity": "abc"}, {"capacity": "999999"}, {"event_date": "ертең"}, {"event_date": when(-2)},
 ])
 def test_create_event_validation(ctx, make, bad):
@@ -137,3 +137,55 @@ def test_http_form_error_message_shown(client, make):
     login(client, org["email"])
     r = client.post("/organizer/events/new", data=form(capacity="0"))
     assert "1 мен" in r.get_data(as_text=True)
+
+
+def test_city_stored_and_shown_in_full_address(ctx, make):
+    org = make.user("organizer")
+    eid = es.create_event(org, form(city="Астана", location="Достық көшесі, 5"))
+    e = es.get_event(eid)
+    assert e["city"] == "Астана" and es.full_address(e) == "Астана, Достық көшесі, 5"
+
+
+def test_search_by_city_and_text(ctx, make):
+    org = make.user("organizer")
+    make.event(org, title="Астанадағы акция", city="Астана")
+    make.event(org, title="Алматыдағы акция", city="Алматы")
+    assert [e["title"] for e in es.search_events(city="Алматы")] == ["Алматыдағы акция"]
+    assert len(es.search_events(city="Атлантида")) == 2           # белгісіз қала сүзгісі елеусіз қалады
+    assert [e["title"] for e in es.search_events(q="астана")] == ["Астанадағы акция"]  # қала бойынша мәтіндік іздеу
+
+
+def test_old_database_without_city_is_migrated(tmp_path):
+    """Қала бағаны жоқ ескі қор деректерін жоғалтпай жаңа схемаға көшеді."""
+    import sqlite3
+    from app import create_app
+    from config import TestConfig
+    path = str(tmp_path / "old.db")
+    conn = sqlite3.connect(path)
+    conn.executescript("""
+        CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'volunteer', created_at TEXT NOT NULL DEFAULT '2026-01-01');
+        CREATE TABLE events (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+            location TEXT NOT NULL, event_date TEXT NOT NULL, capacity INTEGER NOT NULL, organizer_id INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'published', created_at TEXT NOT NULL DEFAULT '2026-01-01');
+        INSERT INTO users (full_name, email, password_hash, role) VALUES ('Ұйым', 'o@example.test', 'x', 'organizer');
+        INSERT INTO events (title, location, event_date, capacity, organizer_id) VALUES ('Ескі іс-шара', 'Көше 1', '2030-01-01 10:00', 5, 1);
+    """)
+    conn.close()
+    app = create_app(TestConfig, DATABASE=path, CERTIFICATE_DIR=str(tmp_path / "c"))
+    with app.app_context():
+        e = es.get_event(1)
+        assert e["title"] == "Ескі іс-шара" and e["city"] == "" and es.full_address(e) == "Көше 1"
+
+
+def test_http_city_filter_and_form(client, make):
+    org = make.user("organizer")
+    make.event(org, title="Қызылордалық", city="Қызылорда")
+    make.event(org, title="Шымкенттік", city="Шымкент")
+    page = client.get("/events?city=Шымкент").get_data(as_text=True)
+    assert "Шымкенттік" in page and "Қызылордалық" not in page
+    login(client, org["email"])
+    form_page = client.get("/organizer/events/new").get_data(as_text=True)
+    assert 'name="city"' in form_page and "Қызылорда" in form_page
+    r = client.post("/organizer/events/new", data=form(city="Атлантида"))
+    assert "Қаланы тізімнен таңдаңыз" in r.get_data(as_text=True)

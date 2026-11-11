@@ -15,10 +15,20 @@
       <label class="form-label" for="description">Сипаттамасы</label>
       <textarea class="form-control" id="description" name="description" rows="5" maxlength="5000">{{ form.get('description', '') }}</textarea>
     </div>
-    <div class="mb-3">
-      <label class="form-label" for="location">Өтетін орны *</label>
-      <input class="form-control" id="location" name="location" required maxlength="200" value="{{ form.get('location', '') }}">
-      <div class="invalid-feedback">Орынды көрсетіңіз.</div>
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label class="form-label" for="city">Қала *</label>
+        <select class="form-select" id="city" name="city" required>
+          <option value="" disabled {{ 'selected' if not form.get('city') }}>Қаланы таңдаңыз</option>
+          {% for c in cities %}<option value="{{ c }}" {{ 'selected' if form.get('city') == c }}>{{ c }}</option>{% endfor %}
+        </select>
+        <div class="invalid-feedback">Қаланы таңдаңыз.</div>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label" for="location">Мекенжайы (көше, ғимарат) *</label>
+        <input class="form-control" id="location" name="location" required maxlength="200" placeholder="Мысалы: Тәуке хан даңғылы, 12" value="{{ form.get('location', '') }}">
+        <div class="invalid-feedback">Мекенжайды көрсетіңіз.</div>
+      </div>
     </div>
     <div class="row g-3 mb-4">
       <div class="col-md-7">

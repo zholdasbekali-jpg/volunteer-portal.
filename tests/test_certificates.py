@@ -143,3 +143,15 @@ def test_logo_is_used_when_present(ctx, make, tmp_path, monkeypatch):
     broken = str(tmp_path / "broken.pdf")
     cs.render_pdf(broken, **kwargs)
     assert open(broken, "rb").read().startswith(b"%PDF")
+
+
+def test_certificate_includes_city(ctx, make):
+    import shutil
+    import subprocess
+    if not shutil.which("pdftotext"):
+        pytest.skip("pdftotext (poppler) орнатылмаған: PDF мәтінін оқу мүмкін емес")
+    org, vol = make.user("organizer"), make.user("volunteer", name="Асем Сәрсенбай")
+    rid = make.registration(vol, make.event(org, days=-2, city="Шымкент"), "attended")
+    cert = cs.issue_certificate(vol, rid)
+    text = subprocess.run(["pdftotext", cert["pdf_path"], "-"], capture_output=True, text=True).stdout
+    assert "Шымкент" in text

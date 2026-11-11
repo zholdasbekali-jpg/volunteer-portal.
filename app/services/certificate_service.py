@@ -1,11 +1,14 @@
 """PDF-сертификаттар: беру шарттарын тексеру, бірегей нөмір, ReportLab арқылы PDF жасау."""
+import logging
 import os
 import secrets
 from datetime import datetime
 from pathlib import Path
 
 from flask import current_app
+from PIL import Image
 from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -55,6 +58,7 @@ TEXTS = {
     },
 }
 _fonts_ready = False
+log = logging.getLogger(__name__)
 
 KZ_MONTHS = ["қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым",
              "шілде", "тамыз", "қыркүйек", "қазан", "қараша", "желтоқсан"]
@@ -113,6 +117,23 @@ def find_logo():
     return None
 
 
+def _load_logo():
+    """Логотипті сертификат фонына (BG) кіріктіріп, мөлдірлік (alpha) өңдеуінсіз RGB түрінде береді:
+    сондықтан кез келген ортада (Windows, Termux) бірдей көрінеді. Қате болса — журналға жазылады
+    (үнсіз өтпейді), сертификат логотипсіз жасалады."""
+    path = find_logo()
+    if not path:
+        return None
+    try:
+        img = Image.open(path).convert("RGBA")
+        base = Image.new("RGBA", img.size, (16, 51, 9, 255))
+        base.alpha_composite(img)
+        return ImageReader(base.convert("RGB"))
+    except Exception as exc:  # бүлінген сурет сертификат берілуін тоқтатпауы керек
+        log.warning("Сертификат логотипін оқу мүмкін болмады (%s): %s", path, exc)
+        return None
+
+
 def _spaced(c, text, font, size, y, w, space, color):
     """Әріп аралығы үлкейтілген мәтінді беттің ортасына салады."""
     width = pdfmetrics.stringWidth(text, font, size) + space * (len(text) - 1)
@@ -152,19 +173,16 @@ def _draw_frame(c, w, h):
 
 def _draw_header(c, w, h, t) -> None:
     """Жоғарғы орталықта логотип; файл жоқ немесе бүлінген болса — порталдың атауы."""
-    logo = find_logo()
-    if logo:
-        try:
-            lw = 230
-            c.drawImage(logo, w / 2 - lw / 2, h - 46 - 120, width=lw, height=120, mask="auto",
-                        preserveAspectRatio=True, anchor="c")
-            return
-        except Exception:  # бүлінген сурет сертификат берілуін тоқтатпауы керек
-            pass
+    logo = _load_logo()
+    if logo is not None:
+        lw = 230
+        c.drawImage(logo, w / 2 - lw / 2, h - 46 - 120, width=lw, height=120,
+                    preserveAspectRatio=True, anchor="c")
+        return
     _spaced(c, t["portal"], SERIF_BOLD, 14, h - 100, w, 2, GOLD)
 
 
-def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer) -> None:
+def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer, city="") -> None:
     """QAMQOR стиліндегі A4 альбомдық сертификатты жасайды (мәтін TEXTS[CERT_LANG])."""
     _register_fonts()
     t = TEXTS[CERT_LANG]
@@ -205,7 +223,8 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.drawCentredString(w / 2, h - 434, quoted)
     c.setFillColor(IVORY)
     c.setFont(SERIF, 11.5)
-    c.drawCentredString(w / 2, h - 456, f"{t['event_date']}: {_fmt_date(event_date)}")
+    when = f"{t['event_date']}: {_fmt_date(event_date)}" + (f", {city}" if city else "")
+    c.drawCentredString(w / 2, h - 456, when)
 
     c.setFillColor(GOLD)
     c.setFont(SERIF, 12)
@@ -234,7 +253,7 @@ def issue_certificate(actor, registration_id: int):
     өз тіркелімі үшін ала алады. Нәтиже: certificates жолы."""
     db = get_db()
     row = db.execute(
-        """SELECT r.id, r.user_id, r.status, u.full_name, e.title, e.event_date,
+        """SELECT r.id, r.user_id, r.status, u.full_name, e.title, e.event_date, e.city,
                   o.full_name AS organizer_name
            FROM registrations r JOIN users u ON u.id = r.user_id
            JOIN events e ON e.id = r.event_id JOIN users o ON o.id = e.organizer_id
@@ -260,7 +279,8 @@ def issue_certificate(actor, registration_id: int):
             code = existing["certificate_code"]
         pdf_path = str(out_dir / f"certificate_{code}.pdf")
         render_pdf(pdf_path, code=code, volunteer=row["full_name"], event_title=row["title"],
-                   event_date=row["event_date"], issued_at=issued_at, organizer=row["organizer_name"])
+                   event_date=row["event_date"], issued_at=issued_at, organizer=row["organizer_name"],
+                   city=row["city"])
         if existing is None:
             tdb.execute(
                 "INSERT INTO certificates (registration_id, certificate_code, issued_at, pdf_path) VALUES (?, ?, ?, ?)",

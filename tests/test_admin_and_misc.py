@@ -53,7 +53,7 @@ def test_organizer_dashboard_and_actions_over_http(client, make):
     client.post(f"/organizer/events/{eid}/restore")
     assert es.get_event(eid)["status"] == "published"
     r = client.post(f"/organizer/events/{eid}/edit",
-                    data={"title": "Жаңартылған", "description": "", "location": "Орын",
+                    data={"title": "Жаңартылған", "description": "", "city": "Астана", "location": "Орын",
                           "event_date": "2030-01-01T10:00", "capacity": "5"}, follow_redirects=True)
     assert "Өзгерістер сақталды" in r.get_data(as_text=True)
     assert client.get(f"/organizer/events/{eid}/participants").status_code == 200
@@ -152,3 +152,35 @@ def test_home_page_renders_stats(client, make):
     make.event(make.user("organizer"), title="Басты беттегі іс-шара")
     page = client.get("/").get_data(as_text=True)
     assert "Басты беттегі іс-шара" in page and "Бірге жақсылық жасайық" in page
+
+
+def test_logo_present_on_every_page_and_served(client, make):
+    """Логотип барлық беттерде көрінуі керек, ал файлдың өзі сервер арқылы қолжетімді."""
+    org, vol, adm = make.user("organizer"), make.user("volunteer"), make.user("admin")
+    eid = make.event(org)
+    for url in ("/", "/events", f"/events/{eid}", "/login", "/register", "/verify/NONE", "/no-such-page"):
+        body = client.get(url).get_data(as_text=True)
+        assert "images/logo.png" in body, url
+    for user, urls in ((vol, ("/my", "/certificates")),
+                       (org, ("/organizer", "/statistics", "/organizer/events/new")),
+                       (adm, ("/admin/",))):
+        login(client, user["email"])
+        for url in urls:
+            assert "images/logo.png" in client.get(url).get_data(as_text=True), url
+        client.post("/logout")
+    import re
+    href = re.search(r'href="(/static/images/logo\.png\?v=\d+)"|src="(/static/images/logo\.png\?v=\d+)"',
+                     client.get("/").get_data(as_text=True))
+    assert href, "логотип сілтемесінде кэш нұсқасы (?v=) болуы керек"
+    r = client.get(href.group(1) or href.group(2))
+    assert r.status_code == 200 and r.mimetype == "image/png"
+
+
+def test_broken_logo_is_logged_not_silent(tmp_path, monkeypatch, caplog):
+    from app.services import certificate_service as cs
+    bad = tmp_path / "bad.png"
+    bad.write_bytes(b"not an image")
+    monkeypatch.setattr(cs, "find_logo", lambda: str(bad))
+    with caplog.at_level("WARNING"):
+        assert cs._load_logo() is None
+    assert "логотипін оқу мүмкін болмады" in caplog.text

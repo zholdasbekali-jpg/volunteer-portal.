@@ -184,3 +184,13 @@ def test_broken_logo_is_logged_not_silent(tmp_path, monkeypatch, caplog):
     with caplog.at_level("WARNING"):
         assert cs._load_logo() is None
     assert "логотипін оқу мүмкін болмады" in caplog.text
+
+
+def test_event_card_is_positioned_so_stretched_link_stays_inside():
+    """Регрессия: .event-card position:relative болмаса, stretched-link бүкіл бетті жауып, сүзгі мен
+    басқа карточкаларды басуға болмай қалады."""
+    import re
+    from pathlib import Path
+    css = (Path(__file__).resolve().parent.parent / "app" / "static" / "css" / "style.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.event-card\s*\{([^}]*)\}", css).group(1)
+    assert "position: relative" in rule

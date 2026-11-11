@@ -39,7 +39,19 @@ python -m pytest
 python -m pytest --cov=app/services --cov-report=term-missing
 ```
 
+## Android (Termux)
+```bash
+pkg update
+pkg install python python-numpy matplotlib python-pillow
+cp -r ~/storage/downloads/VolunteerPortal ~/ && cd ~/VolunteerPortal
+pip install -r requirements.txt
+python run.py
+```
+Браузерде http://127.0.0.1:5000. (Бұл жерде Termux-та тексерілмеген; ақау болса, қате мәтінін жазып алыңыз.)
+
 ## Ақаулықтарды жою
+- Сертификат дизайны/логотипі жаңармаса: `generated/certificates/*.pdf` файлдарын жойыңыз (бар PDF қайта пайдаланылады) және серверді қайта іске қосыңыз.
+- Логотип көрінбесе: `app/static/images/logo.png` бар екенін тексеріңіз, бетті кэшсіз жаңартыңыз (Ctrl+F5).
 - `ModuleNotFoundError: flask_login`: виртуалды орта белсенді емес немесе `pip install -r requirements.txt` орындалмады.
 - Порт бос емес: `run.py` ішіндегі `port=5000` мәнін өзгертіңіз.
 - Жоба папкасының атында бос орын болса (мысалы, «VolunteerPortal beta»), командаларды тырнақшамен жазыңыз.

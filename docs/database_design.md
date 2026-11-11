@@ -21,7 +21,9 @@
 | Өріс | Түрі | Шектеу |
 |---|---|---|
 | id | INTEGER | PK |
-| title, location | TEXT | NOT NULL |
+| title | TEXT | NOT NULL |
+| city | TEXT | NOT NULL, әдепкі ''; мәні `app/models.py::CITIES` тізімінен (сервис тексереді) |
+| location | TEXT | NOT NULL; қаладан кейінгі мекенжай (көше, ғимарат) |
 | description | TEXT | әдепкі '' |
 | event_date | TEXT | `YYYY-MM-DD HH:MM` (мәтін ретінде салыстыруға болады) |
 | capacity | INTEGER | CHECK capacity > 0 |
@@ -54,7 +56,10 @@
 - registrations 1—0..1 certificates.
 
 ## Индекстер
-`events(event_date)`, `events(organizer_id)`, `registrations(event_id)`.
+`events(event_date)`, `events(organizer_id)`, `events(city)`, `registrations(event_id)`.
+
+## Миграция
+`city` бағаны кейін қосылды. `init_db()` ескі қорда бағанның жоқтығын `PRAGMA table_info` арқылы анықтап, `ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT ''` орындайды; бар деректер сақталады (тест: `test_old_database_without_city_is_migrated`). Қаласы жоқ ескі іс-шаралар тек мекенжаймен көрсетіледі, өңдегенде қаланы таңдау талап етіледі.
 
 ## Тұтастық пен транзакциялар
 - Қайталанатын тіркелуден UNIQUE шектеуі қорғайды (сервис алдын ала тексереді, DB соңғы қорғаныс).

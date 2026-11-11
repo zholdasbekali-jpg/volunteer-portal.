@@ -25,8 +25,12 @@ Python 3.11+ (әзірлеу Python 3.13-те тексерілді), Flask, Flas
 | FR-04 | Іс-шараға тіркелу | Ерікті тіркеле алады; қайталанбайды; бас тартқанда орын босайды; қателер түсінікті | `test_registrations.py::test_register_success`, `test_duplicate_registration_forbidden`, `test_cancel_registration_frees_spot`, `test_http_register_and_cancel_flow` |
 | FR-05 | Қатысушылар санының шегін бақылау | Орын толғанда тіркелу бас тартылады; бір мезгілдегі сұраулар шектен асырмайды | `test_register_rejected_when_full`, `test_concurrent_registration_never_exceeds_capacity`, `test_failed_transaction_rolls_back` |
 | FR-06 | Ұйымдастырушының іс-шара басқаруы | Құру/өңдеу/тоқтату/жою тек иесіне (және әкімшіге); қатысуды белгілеу және деректер қорында сақтау | `test_events.py::test_create_event`, `test_owner_can_update_but_other_organizer_cannot`, `test_http_create_edit_by_owner_and_403_for_other`, `test_set_attendance_statuses_persist` |
-| FR-07 | PDF-сертификат | Тек қатысуы расталғанға, тек өз сертификатын; бірегей нөмір; PDF оқылады | `test_certificates.py` (13 тест) |
+| FR-07 | PDF-сертификат | Тек қатысуы расталғанға, тек өз сертификатын; бірегей нөмір; PDF оқылады; QAMQOR дизайны, логотип, қала | `test_certificates.py` (15 тест) |
 | FR-08 | Статистика графиктері | Сандар деректер қорынан; 3 Matplotlib графигі; рөл бойынша қолжетімділік | `test_statistics.py` (10 тест) |
+| FR-09 | Қала және нақты мекенжай | Іс-шара қаласы тізімнен таңдалады (қате қала қабылданбайды), мекенжай бөлек; каталогта қала бойынша сүзгі және іздеу; ескі қорлар деректерін жоғалтпай көшіріледі | `test_events.py::test_city_stored_and_shown_in_full_address`, `test_search_by_city_and_text`, `test_old_database_without_city_is_migrated`, `test_http_city_filter_and_form` |
+
+## 5.1. Дизайн және брендинг
+Интерфейс пен сертификат QAMQOR волонтерлік жобасының стилінде: қою жасыл (#103309), алтын (#d0b470), ақшыл бежевый фон. Логотип (`app/static/images/logo.png`) барлық беттерде көрінеді: шапка, hero, кіру/тіркелу, футер, қате беттері, сертификат. Регрессия тесті: `test_logo_present_on_every_page_and_served`.
 
 ## 6. Функционалдық емес талаптар
 | Код | Талап | Тексеру әдісі |

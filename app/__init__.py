@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import click
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 from flask_login import LoginManager
 
 from config import Config
@@ -45,8 +45,18 @@ def create_app(config_object=None, **overrides) -> Flask:
         row = auth_service.get_user(user_id)
         return User(row) if row else None
 
+    # Статикалық файл өзгерсе, браузер кэшіндегі ескі нұсқаны көрсетпеуі үшін ?v=<өзгерген уақыты>
+    static_dir = Path(app.static_folder)
+    asset_version = str(int(max((f.stat().st_mtime for f in static_dir.rglob("*")
+                                 if f.is_file() and f.suffix in {".css", ".png", ".js"}), default=0)))
+
+    @app.context_processor
+    def inject_static_url():
+        return {"static_url": lambda name: url_for("static", filename=name, v=asset_version)}
+
     app.jinja_env.globals["csrf_token"] = get_csrf_token
     app.jinja_env.globals["now_str"] = event_service.now_str
+    app.jinja_env.filters["full_address"] = event_service.full_address
     app.jinja_env.filters["kz_datetime"] = kz_datetime
     app.jinja_env.filters["kz_date"] = lambda v: kz_datetime(v, with_time=False)
     app.jinja_env.globals.update(ROLE_LABELS=ROLE_LABELS, EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,

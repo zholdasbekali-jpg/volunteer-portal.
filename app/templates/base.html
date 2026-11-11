@@ -5,17 +5,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Еріктілер порталы{% endblock %} · Еріктілер порталы</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link rel="icon" type="image/png" href="{{ static_url('images/favicon.png') }}">
   <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ static_url('css/style.css') }}" rel="stylesheet">
 </head>
 <body>
   {% set ep = request.endpoint or '' %}
   <nav class="navbar navbar-expand-lg vp-nav sticky-top" data-bs-theme="dark">
     <div class="container">
       <a class="navbar-brand vp-brand" href="{{ url_for('events.index') }}">
-        <img class="vp-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="QAMQOR — Еріктілер порталы">
+        <img class="vp-logo" src="{{ static_url('images/logo.png') }}" alt="QAMQOR — Еріктілер порталы">
       </a>
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Мәзір">
         <span class="navbar-toggler-icon"></span>
@@ -63,13 +63,13 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="py-3 mt-4">
-    <div class="container d-flex flex-wrap justify-content-between gap-2">
-      <span>© Еріктілер іс-шаралары порталы</span>
-      <span>Бірге — жақсылыққа 🌱</span>
+  <footer class="vp-footer py-3 mt-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <img src="{{ static_url('images/logo.png') }}" alt="QAMQOR">
+      <span>© Еріктілер іс-шаралары порталы · <span class="handle">@Qamqor_11</span></span>
     </div>
   </footer>
   <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ static_url('js/app.js') }}"></script>
 </body>
 </html>

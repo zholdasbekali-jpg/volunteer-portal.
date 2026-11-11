@@ -3,14 +3,21 @@
 {% block title %}Басты бет{% endblock %}
 {% block content %}
 <section class="hero mb-4">
-  <span class="badge-soft b-published mb-3 d-inline-block">Еріктілік қозғалысы</span>
-  <h1 class="mb-3">Бірге жақсылық жасайық</h1>
-  <p class="lead text-muted mb-4" style="max-width: 52ch">Өзіңізге жақын іс-шараны табыңыз, бір басумен тіркеліңіз және қатысқаныңыз расталған соң ресми PDF-сертификат алыңыз.</p>
-  <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-primary btn-lg" href="{{ url_for('events.catalog') }}"><i class="bi bi-search"></i> Іс-шараларды қарау</a>
-    {% if not current_user.is_authenticated %}
-      <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}">Ерікті болу</a>
-    {% endif %}
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7" style="position:relative; z-index:1">
+      <span class="badge-soft mb-3 d-inline-block">Еріктілік қозғалысы</span>
+      <h1 class="mb-3">Бірге жақсылық жасайық</h1>
+      <p class="lead mb-4" style="max-width: 52ch">Өз қалаңыздағы іс-шараны табыңыз, бір басумен тіркеліңіз және қатысқаныңыз расталған соң ресми PDF-сертификат алыңыз.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-gold btn-lg" href="{{ url_for('events.catalog') }}"><i class="bi bi-search"></i> Іс-шараларды қарау</a>
+        {% if not current_user.is_authenticated %}
+          <a class="btn btn-outline-light btn-lg" href="{{ url_for('auth.register') }}">Ерікті болу</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-5 text-center">
+      <img class="hero-logo" src="{{ static_url('images/logo.png') }}" alt="QAMQOR — волонтерлік жоба">
+    </div>
   </div>
 </section>
 

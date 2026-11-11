@@ -1,126 +1,147 @@
-/* Еріктілер порталы — бірыңғай дизайн жүйесі (Bootstrap 5 үстіне) */
+/* Еріктілер порталы — бірыңғай дизайн жүйесі, QAMQOR стилі (Bootstrap 5 үстіне).
+   Түстерді өзгерту үшін тек осы :root блогын түзетсеңіз жеткілікті. */
 :root {
-  --vp-green: #1f7a4d;
-  --vp-green-dark: #14532d;
-  --vp-green-soft: #e8f5ee;
-  --vp-sand: #fbfaf6;
-  --vp-ink: #1c2a24;
-  --vp-muted: #66756d;
-  --vp-line: #e6ebe7;
-  --vp-amber: #b7791f;
+  --vp-forest: #103309;      /* қою жасыл: шапка, футер, hero */
+  --vp-forest-2: #1b4d12;    /* негізгі түймелер */
+  --vp-leaf: #5d9a42;        /* жапырақ жасыл: акценттер, толу сызығы */
+  --vp-leaf-soft: #e8f1de;
+  --vp-gold: #d0b470;        /* алтын: жиектер, белгілер */
+  --vp-gold-dark: #8f7330;   /* ашық фондағы алтын мәтін */
+  --vp-gold-soft: #f6efd8;
+  --vp-ivory: #f4efe0;
+  --vp-bg: #f7f4ea;
+  --vp-ink: #1c2a1a;
+  --vp-muted: #62705f;
+  --vp-line: #e7e1cc;
   --vp-radius: 16px;
-  --vp-shadow: 0 1px 2px rgba(20, 60, 40, .05), 0 8px 24px rgba(20, 60, 40, .07);
-  --bs-primary: var(--vp-green);
-  --bs-primary-rgb: 31, 122, 77;
-  --bs-link-color: var(--vp-green);
-  --bs-link-color-rgb: 31, 122, 77;
-  --bs-link-hover-color: var(--vp-green-dark);
-  --bs-link-hover-color-rgb: 20, 83, 45;
+  --vp-shadow: 0 1px 2px rgba(16, 51, 9, .05), 0 8px 24px rgba(16, 51, 9, .08);
+  --bs-primary: var(--vp-forest-2);
+  --bs-primary-rgb: 27, 77, 18;
+  --bs-link-color: #2c6a1d;
+  --bs-link-color-rgb: 44, 106, 29;
+  --bs-link-hover-color: var(--vp-forest);
+  --bs-link-hover-color-rgb: 16, 51, 9;
   --bs-body-font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --bs-body-color: var(--vp-ink);
-  --bs-body-bg: var(--vp-sand);
+  --bs-body-bg: var(--vp-bg);
 }
 body { min-height: 100vh; display: flex; flex-direction: column; line-height: 1.55; }
 main { flex: 1; }
-h1, h2, h3, h4 { letter-spacing: -.01em; font-weight: 700; }
+h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { letter-spacing: -.01em; font-weight: 700; color: var(--vp-forest); }
 .text-muted, .text-secondary { color: var(--vp-muted) !important; }
 
 /* Навигация: QAMQOR логотипі қою жасыл фонға арналған */
-:root { --vp-forest: #103309; --vp-gold: #d0b470; }
 .vp-nav { background: var(--vp-forest); border-bottom: 2px solid var(--vp-gold); padding-top: .35rem; padding-bottom: .35rem; }
 .vp-brand { display: flex; align-items: center; padding: 0; margin-right: 1rem; }
 .vp-logo { height: 54px; width: auto; display: block; }
-.vp-nav .nav-link { color: #f4efe0; font-weight: 500; border-radius: 10px; padding: .45rem .8rem !important; }
+.vp-nav .nav-link { color: var(--vp-ivory); font-weight: 500; border-radius: 10px; padding: .45rem .8rem !important; }
 .vp-nav .nav-link:hover { background: rgba(244, 239, 224, .12); }
 .vp-nav .nav-link.active { background: rgba(208, 180, 112, .18); color: var(--vp-gold); }
 .vp-nav-user { color: rgba(244, 239, 224, .8); }
-.btn-gold { --bs-btn-bg: var(--vp-gold); --bs-btn-border-color: var(--vp-gold); --bs-btn-color: var(--vp-forest);
-  --bs-btn-hover-bg: #e0c98d; --bs-btn-hover-border-color: #e0c98d; --bs-btn-hover-color: var(--vp-forest);
-  --bs-btn-active-bg: #e0c98d; --bs-btn-active-color: var(--vp-forest); }
 
 /* Батырмалар */
 .btn { border-radius: 12px; font-weight: 600; padding: .55rem 1.05rem; }
-.btn-primary { --bs-btn-bg: var(--vp-green); --bs-btn-border-color: var(--vp-green);
-  --bs-btn-hover-bg: var(--vp-green-dark); --bs-btn-hover-border-color: var(--vp-green-dark);
-  --bs-btn-active-bg: var(--vp-green-dark); --bs-btn-disabled-bg: var(--vp-green); }
-.btn-outline-primary { --bs-btn-color: var(--vp-green); --bs-btn-border-color: var(--vp-green);
-  --bs-btn-hover-bg: var(--vp-green); --bs-btn-hover-border-color: var(--vp-green); --bs-btn-active-bg: var(--vp-green-dark); }
+.btn-primary { --bs-btn-bg: var(--vp-forest-2); --bs-btn-border-color: var(--vp-forest-2); --bs-btn-color: #fff;
+  --bs-btn-hover-bg: var(--vp-forest); --bs-btn-hover-border-color: var(--vp-forest); --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--vp-forest); --bs-btn-active-border-color: var(--vp-forest);
+  --bs-btn-disabled-bg: var(--vp-forest-2); --bs-btn-disabled-border-color: var(--vp-forest-2); }
+.btn-outline-primary { --bs-btn-color: var(--vp-forest-2); --bs-btn-border-color: var(--vp-forest-2);
+  --bs-btn-hover-bg: var(--vp-forest-2); --bs-btn-hover-border-color: var(--vp-forest-2); --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--vp-forest); --bs-btn-active-border-color: var(--vp-forest); }
+.btn-gold { --bs-btn-bg: var(--vp-gold); --bs-btn-border-color: var(--vp-gold); --bs-btn-color: var(--vp-forest);
+  --bs-btn-hover-bg: #e0c98d; --bs-btn-hover-border-color: #e0c98d; --bs-btn-hover-color: var(--vp-forest);
+  --bs-btn-active-bg: #e0c98d; --bs-btn-active-border-color: #e0c98d; --bs-btn-active-color: var(--vp-forest); }
 .btn-sm { padding: .3rem .7rem; border-radius: 10px; }
 
 /* Карточкалар */
-.vp-card { background: #fff; border: 1px solid var(--vp-line); border-radius: var(--vp-radius);
-  box-shadow: var(--vp-shadow); }
+.vp-card { background: #fff; border: 1px solid var(--vp-line); border-radius: var(--vp-radius); box-shadow: var(--vp-shadow); }
 .vp-card-pad { padding: 1.35rem; }
 .event-card { height: 100%; display: flex; flex-direction: column; transition: transform .15s, box-shadow .15s; }
-.event-card:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(20,60,40,.06), 0 14px 32px rgba(20,60,40,.11); }
-.event-card .date-chip { background: var(--vp-green-soft); color: var(--vp-green-dark); border-radius: 12px;
-  text-align: center; padding: .45rem .7rem; min-width: 58px; line-height: 1.15; }
+.event-card:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(16,51,9,.06), 0 14px 32px rgba(16,51,9,.13); }
+.event-card .date-chip { background: var(--vp-gold-soft); color: var(--vp-forest); border: 1px solid var(--vp-gold);
+  border-radius: 12px; text-align: center; padding: .45rem .7rem; min-width: 58px; line-height: 1.15; }
 .event-card .date-chip b { display: block; font-size: 1.35rem; }
-.event-card .date-chip small { text-transform: uppercase; font-size: .68rem; letter-spacing: .04em; }
+.event-card .date-chip small { text-transform: uppercase; font-size: .68rem; letter-spacing: .04em; color: var(--vp-gold-dark); }
 .event-card.is-past { opacity: .78; }
-.event-card.is-past .date-chip { background: #eef0ee; color: var(--vp-muted); }
-.stretched-link-title { color: var(--vp-ink); text-decoration: none; }
-.stretched-link-title:hover { color: var(--vp-green); }
+.event-card.is-past .date-chip { background: #eeeee8; border-color: #d6d6cc; color: var(--vp-muted); }
+.stretched-link-title { color: var(--vp-forest); text-decoration: none; }
+.stretched-link-title:hover { color: var(--vp-forest-2); text-decoration: underline; text-decoration-color: var(--vp-gold); }
 .meta { color: var(--vp-muted); font-size: .92rem; display: flex; gap: .5rem; align-items: center; }
-.meta i { color: var(--vp-green); }
+.meta i { color: var(--vp-gold-dark); }
 
 /* Орын көрсеткіші */
-.spots { height: 8px; background: #edf1ee; border-radius: 99px; overflow: hidden; }
-.spots > span { display: block; height: 100%; background: var(--vp-green); border-radius: 99px; }
-.spots.full > span { background: var(--vp-amber); }
+.spots { height: 8px; background: #ece8d7; border-radius: 99px; overflow: hidden; }
+.spots > span { display: block; height: 100%; background: var(--vp-leaf); border-radius: 99px; }
+.spots.full > span { background: var(--vp-gold); }
 
 /* Мәртебе белгілері */
 .badge-soft { border-radius: 99px; padding: .38em .8em; font-weight: 600; font-size: .78rem; }
-.b-published, .b-attended { background: #dff3e7; color: #14532d; }
+.b-published, .b-attended { background: var(--vp-leaf-soft); color: var(--vp-forest); }
 .b-cancelled, .b-absent { background: #fde8e6; color: #9b2c22; }
-.b-pending { background: #fdf1d9; color: #8a5a0b; }
-.b-past { background: #eceeed; color: #55625b; }
-.b-role { background: #e7eefb; color: #2a4a8f; }
+.b-pending { background: var(--vp-gold-soft); color: #7a5a10; }
+.b-past { background: #eceeea; color: #55625b; }
+.b-role { background: var(--vp-gold-soft); color: var(--vp-forest); border: 1px solid var(--vp-gold); }
 
-/* Hero */
-.hero { background: linear-gradient(135deg, #e8f5ee 0%, #f7fbf8 55%, #fff6df 100%);
-  border: 1px solid var(--vp-line); border-radius: 28px; padding: 3.2rem 2.4rem; position: relative; overflow: hidden; }
-.hero::after { content: ""; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px;
-  border-radius: 50%; background: rgba(31,122,77,.09); }
-.hero h1 { font-size: clamp(1.9rem, 4.5vw, 3rem); max-width: 16ch; }
-.stat-tile { background: #fff; border: 1px solid var(--vp-line); border-radius: 14px; padding: .9rem 1.1rem; }
-.stat-tile b { font-size: 1.6rem; color: var(--vp-green-dark); display: block; line-height: 1.1; }
+/* Hero (басты бет) */
+.hero { background: radial-gradient(circle at 85% 20%, #1f5a15 0%, var(--vp-forest) 60%);
+  border: 1px solid var(--vp-gold); border-radius: 28px; padding: 3rem 2.4rem; color: var(--vp-ivory); position: relative; overflow: hidden; }
+.hero::before, .hero::after { content: ""; position: absolute; border: 1px solid rgba(208,180,112,.45); border-radius: 50%; pointer-events: none; }
+.hero::before { width: 360px; height: 360px; right: -120px; top: -140px; }
+.hero::after { width: 420px; height: 420px; right: -150px; top: -170px; }
+.hero h1 { color: #fff; font-size: clamp(1.9rem, 4.5vw, 3rem); max-width: 16ch; }
+.hero .lead { color: rgba(244,239,224,.85); }
+.hero-logo { width: min(100%, 380px); height: auto; position: relative; z-index: 1; }
+.hero .badge-soft { background: rgba(208,180,112,.18); color: var(--vp-gold); border: 1px solid var(--vp-gold); }
+.stat-tile { background: #fff; border: 1px solid var(--vp-line); border-left: 4px solid var(--vp-gold); border-radius: 14px; padding: .9rem 1.1rem; }
+.stat-tile b { font-size: 1.6rem; color: var(--vp-forest); display: block; line-height: 1.1; }
 .stat-tile span { color: var(--vp-muted); font-size: .85rem; }
 
 /* Формалар */
-.form-control, .form-select { border-radius: 12px; border-color: #d5ddd8; padding: .6rem .9rem; }
-.form-control:focus, .form-select:focus { border-color: var(--vp-green); box-shadow: 0 0 0 .22rem rgba(31,122,77,.16); }
-.form-label { font-weight: 600; font-size: .92rem; }
-.auth-wrap { max-width: 460px; margin: 2.5rem auto; }
-
-.nav-pills { --bs-nav-pills-link-active-bg: var(--vp-green); }
-.nav-pills .nav-link { color: var(--vp-green-dark); border-radius: 10px; }
-.nav-pills .nav-link.active { color: #fff; }
-.breadcrumb { --bs-breadcrumb-divider-color: var(--vp-muted); }
+.form-control, .form-select { border-radius: 12px; border-color: #d8d3bf; padding: .6rem .9rem; background-color: #fffefb; }
+.form-control:focus, .form-select:focus { border-color: var(--vp-leaf); box-shadow: 0 0 0 .22rem rgba(93,154,66,.2); }
+.form-label { font-weight: 600; font-size: .92rem; color: var(--vp-forest); }
+.auth-wrap { max-width: 460px; margin: 2rem auto; }
+.auth-card { padding: 0; overflow: hidden; }
+.auth-banner { background: var(--vp-forest); border-bottom: 2px solid var(--vp-gold); padding: 1.2rem; text-align: center; }
+.auth-banner img { height: 96px; width: auto; max-width: 100%; }
+.auth-body { padding: 1.5rem 1.5rem 1.35rem; }
 
 /* Кестелер */
 .vp-table { margin: 0; }
-.vp-table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--vp-muted);
-  font-weight: 600; border-bottom-color: var(--vp-line); white-space: nowrap; }
+.vp-table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--vp-gold-dark);
+  font-weight: 700; border-bottom-color: var(--vp-gold); white-space: nowrap; background: #fffdf6; }
 .vp-table td { vertical-align: middle; border-color: var(--vp-line); }
+.nav-pills { --bs-nav-pills-link-active-bg: var(--vp-forest-2); }
+.nav-pills .nav-link { color: var(--vp-forest); border-radius: 10px; }
+.nav-pills .nav-link.active { color: #fff; }
+.breadcrumb { --bs-breadcrumb-divider-color: var(--vp-muted); }
 
 /* Бос күй / жүктелу */
 .empty { text-align: center; padding: 2.6rem 1rem; color: var(--vp-muted); }
-.empty i { font-size: 2.4rem; color: #b8c9be; display: block; margin-bottom: .5rem; }
+.empty i { font-size: 2.4rem; color: var(--vp-gold); display: block; margin-bottom: .5rem; }
 .chart-img { width: 100%; border-radius: 12px; background: #fff; min-height: 120px; }
 .chart-box.loading::before { content: "Жүктелуде…"; display: block; text-align: center; color: var(--vp-muted); padding: 2rem; }
 .chart-box.loading img { display: none; }
 
 /* Сертификат карточкасы */
-.cert-card { border-left: 5px solid var(--vp-green); }
+.cert-card { border-left: 5px solid var(--vp-gold); }
 
-footer { border-top: 1px solid var(--vp-line); background: #fff; color: var(--vp-muted); font-size: .9rem; }
-.toast-area { position: fixed; top: 76px; right: 16px; z-index: 1080; width: min(380px, calc(100vw - 32px)); }
+/* Қате беті */
+.error-panel { background: var(--vp-forest); border: 1px solid var(--vp-gold); border-radius: 24px; color: var(--vp-ivory);
+  padding: 2.5rem 1.5rem; text-align: center; max-width: 640px; margin: 2rem auto; }
+.error-panel img { height: 90px; width: auto; margin-bottom: 1rem; }
+.error-panel .code { font-size: 4.5rem; font-weight: 800; color: var(--vp-gold); line-height: 1; }
+.error-panel h1 { color: #fff; }
+
+/* Футер */
+footer.vp-footer { background: var(--vp-forest); border-top: 2px solid var(--vp-gold); color: rgba(244,239,224,.8); font-size: .9rem; }
+footer.vp-footer img { height: 40px; width: auto; }
+footer.vp-footer .handle { color: var(--vp-gold); }
 
 @media (max-width: 575.98px) {
   .vp-logo { height: 46px; }
   .hero { padding: 2rem 1.2rem; border-radius: 20px; }
   .vp-card-pad { padding: 1rem; }
-  .table-responsive-stack td { white-space: normal; }
+  .auth-body { padding: 1.2rem; }
 }
 @media (prefers-reduced-motion: reduce) { .event-card, .event-card:hover { transition: none; transform: none; } }

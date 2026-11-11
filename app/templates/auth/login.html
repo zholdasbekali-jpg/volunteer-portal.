@@ -3,7 +3,9 @@
 {% block title %}Кіру{% endblock %}
 {% block content %}
 <div class="auth-wrap">
-  <div class="vp-card vp-card-pad">
+  <div class="vp-card auth-card">
+    <div class="auth-banner"><img src="{{ static_url('images/logo.png') }}" alt="QAMQOR"></div>
+    <div class="auth-body">
     <h1 class="h3 mb-1">Жүйеге кіру</h1>
     <p class="text-muted mb-4">Аккаунтыңызға кіріңіз</p>
     <form method="post" class="needs-validation" novalidate>
@@ -21,6 +23,7 @@
       <button class="btn btn-primary w-100" type="submit" data-loading="Кіруде…">Кіру</button>
     </form>
     <p class="text-center text-muted mt-3 mb-0">Аккаунт жоқ па? <a href="{{ url_for('auth.register') }}">Тіркелу</a></p>
+    </div>
   </div>
 </div>
 {% endblock %}

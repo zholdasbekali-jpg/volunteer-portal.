@@ -2,7 +2,9 @@
 {% block title %}Сертификатты тексеру{% endblock %}
 {% block content %}
 <div class="auth-wrap">
-  <div class="vp-card vp-card-pad text-center">
+  <div class="vp-card auth-card text-center">
+    <div class="auth-banner"><img src="{{ static_url('images/logo.png') }}" alt="QAMQOR"></div>
+    <div class="auth-body">
     {% if cert %}
       <i class="bi bi-patch-check-fill text-success" style="font-size:3rem"></i>
       <h1 class="h4 mt-2">Сертификат түпнұсқа</h1>
@@ -14,6 +16,7 @@
       <h1 class="h4 mt-2">Сертификат табылмады</h1>
       <p class="text-muted mb-0">№ {{ code }} нөмірлі сертификат жүйеде жоқ.</p>
     {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="text-center py-5">
-  <div class="display-1 fw-bold" style="color: var(--vp-green)">{{ code }}</div>
+<div class="error-panel">
+  <img src="{{ static_url('images/logo.png') }}" alt="QAMQOR">
+  <div class="code">{{ code }}</div>
   <h1 class="h3">{{ title }}</h1>
-  <p class="text-muted">{{ text }}</p>
-  <a class="btn btn-primary" href="{{ url_for('events.index') }}">Басты бетке</a>
+  <p class="mb-4" style="color: rgba(244,239,224,.85)">{{ text }}</p>
+  <a class="btn btn-gold" href="{{ url_for('events.index') }}">Басты бетке</a>
 </div>
 {% endblock %}

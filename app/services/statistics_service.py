@@ -14,11 +14,11 @@ from matplotlib.ticker import MaxNLocator  # noqa: E402
 from ..database import get_db  # noqa: E402
 from ..errors import NotFound  # noqa: E402
 
-GREEN = "#1f7a4d"
-GREEN_LIGHT = "#8fd0ad"
-AMBER = "#e0a526"
-GRAY = "#9aa5a0"
-GREEN_DARK_HEX = "#14532d"
+GREEN = "#1b4d12"        # QAMQOR палитрасы
+GREEN_LIGHT = "#6aa84f"
+AMBER = "#d0b470"        # алтын
+GRAY = "#b9b49f"
+GREEN_DARK_HEX = "#103309"
 CHART_NAMES = ("summary", "events", "fill")
 
 

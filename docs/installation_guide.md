@@ -31,7 +31,7 @@ python run.py
 Браузерде: http://127.0.0.1:5000
 
 ## 4. Конфигурация
-Ортаның айнымалылары (міндетті емес): `SECRET_KEY` (болмаса `instance/secret_key` файлы бір рет жасалады), `DATABASE`, `CERTIFICATE_DIR`, `FLASK_DEBUG=1` (тек әзірлеу үшін; әдепкіде өшірулі).
+Ортаның айнымалылары (міндетті емес): `SECRET_KEY` (болмаса `instance/secret_key` файлы бір рет жасалады), `DATABASE`, `CERTIFICATE_DIR`, `PUBLIC_URL` (сертификаттағы QR-код сілтемесінің негізгі мекенжайы, мысалы `https://portal.example.kz`), `FLASK_DEBUG=1` (тек әзірлеу үшін; әдепкіде өшірулі).
 
 ## 5. Тесттер
 ```

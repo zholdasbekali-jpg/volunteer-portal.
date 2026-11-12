@@ -155,3 +155,70 @@ def test_certificate_includes_city(ctx, make):
     cert = cs.issue_certificate(vol, rid)
     text = subprocess.run(["pdftotext", cert["pdf_path"], "-"], capture_output=True, text=True).stdout
     assert "Шымкент" in text
+
+
+# ---------- QR-код және сканер ----------
+
+@pytest.mark.parametrize("text,expected", [
+    ("VP-2026-FA67E79B", "VP-2026-FA67E79B"),
+    ("vp-2026-fa67e79b", "VP-2026-FA67E79B"),                                   # кіші әріп қабылданады
+    ("http://127.0.0.1:5000/verify/VP-2026-FA67E79B", "VP-2026-FA67E79B"),      # QR мазмұны — толық сілтеме
+    ("https://portal.example.kz/verify/VP-2027-00AABBCC?x=1", "VP-2027-00AABBCC"),
+    ("  Нөмір: VP-2026-FA67E79B  ", "VP-2026-FA67E79B"),
+    ("https://evil.example/", None), ("VP-2026-XYZ", None), ("", None), (None, None),
+])
+def test_extract_code(text, expected):
+    assert cs.extract_code(text) == expected
+
+
+def test_pdf_with_qr_differs_from_plain(tmp_path):
+    kw = dict(code="VP-2026-FA67E79B", volunteer="Асем", event_title="Іс-шара", event_date="2026-05-01 10:00",
+              issued_at="2026-05-02 09:00", organizer="Ұйым", city="Қызылорда")
+    plain, with_qr = str(tmp_path / "a.pdf"), str(tmp_path / "b.pdf")
+    cs.render_pdf(plain, **kw)
+    cs.render_pdf(with_qr, verify_url="http://localhost/verify/VP-2026-FA67E79B", **kw)
+    assert open(with_qr, "rb").read().startswith(b"%PDF")
+    assert os.path.getsize(with_qr) != os.path.getsize(plain)
+
+
+def test_download_embeds_verify_url_from_request(client, make, monkeypatch):
+    _, vol, _, rid = attended(make)
+    seen = {}
+    real = cs.render_pdf
+    monkeypatch.setattr(cs, "render_pdf", lambda path, **kw: (seen.update(kw), real(path, **kw))[1])
+    login(client, vol["email"])
+    assert client.get(f"/certificates/{rid}/download").status_code == 200
+    assert seen["verify_url"] == f"http://localhost/verify/{seen['code']}"
+
+
+def test_public_url_overrides_request_host(app, make, monkeypatch):
+    app.config["PUBLIC_URL"] = "https://portal.example.kz/"
+    _, vol, _, rid = attended(make)
+    seen = {}
+    real = cs.render_pdf
+    monkeypatch.setattr(cs, "render_pdf", lambda path, **kw: (seen.update(kw), real(path, **kw))[1])
+    c = app.test_client()
+    login(c, vol["email"])
+    assert c.get(f"/certificates/{rid}/download").status_code == 200
+    assert seen["verify_url"] == f"https://portal.example.kz/verify/{seen['code']}"
+
+
+def test_scan_page_and_redirects(client, make):
+    page = client.get("/verify")
+    body = page.get_data(as_text=True)
+    assert page.status_code == 200 and "jsQR.js" in body and 'id="scan-file"' in body and "scanner.js" in body
+    r = client.get("/verify?code=http://x.example/verify/vp-2026-fa67e79b")
+    assert r.status_code == 302 and r.headers["Location"].endswith("/verify/VP-2026-FA67E79B")
+    r = client.get("/verify?code=мұнда нөмір жоқ", follow_redirects=True)
+    assert "нөмірі табылмады" in r.get_data(as_text=True)
+
+
+def test_scanner_assets_are_served(client):
+    for url in ("/static/vendor/jsQR.js", "/static/js/scanner.js"):
+        assert client.get(url).status_code == 200, url
+
+
+def test_scan_link_in_navigation_for_everyone(client, make):
+    assert "Сертификатты тексеру" in client.get("/").get_data(as_text=True)
+    login(client, make.user("volunteer")["email"])
+    assert "Сертификатты тексеру" in client.get("/my").get_data(as_text=True)

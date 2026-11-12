@@ -16,6 +16,9 @@
 | 8 | Қатысушыларды басқару | `/organizer/events/<id>/participants` | ![](screenshots/08_participants.png) |
 | 9 | Сертификаттар беті | `/certificates` | ![](screenshots/06_certs.png) |
 | 9б | PDF-сертификат үлгісі | жүктеу | ![](screenshots/16_certificate_pdf.png) |
+| 9в | QR-кодты сертификат | жүктеу | ![](screenshots/14_certificate_qr.png) |
+| 9г | QR-сканер беті | `/verify` | ![](screenshots/12_verify_scanner.png) |
+| 9д | Тексеру нәтижесі | `/verify/<нөмір>` | ![](screenshots/13_verify_result.png) |
 | 10 | Статистика | `/statistics` | ![](screenshots/10_stats.png) |
 | 11 | Әкімші панелі | `/admin/` | ![](screenshots/11_admin.png) |
 | — | Мобильді көрініс (390 px) | `/`, `/events`, `/login` | ![](screenshots/12_mobile_home.png) ![](screenshots/13_mobile_catalog.png) ![](screenshots/18_mobile_login.png) |

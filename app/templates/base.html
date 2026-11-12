@@ -23,6 +23,7 @@
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
           <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('events.catalog','events.detail') }}" href="{{ url_for('events.catalog') }}">Іс-шаралар</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('certificates.scan','certificates.verify') }}" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Сертификатты тексеру</a></li>
           {% if current_user.is_authenticated %}
             {% if current_user.is_volunteer %}
               <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'registrations.my_registrations' }}" href="{{ url_for('registrations.my_registrations') }}">Менің тіркелімдерім</a></li>
@@ -71,5 +72,6 @@
   </footer>
   <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ static_url('js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

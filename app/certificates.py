@@ -1,5 +1,5 @@
 """Сертификат беті, PDF жүктеу және түпнұсқалығын тексеру."""
-from flask import Blueprint, abort, render_template, send_file
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user
 
 from .auth import roles_required
@@ -21,12 +21,26 @@ def list_certificates():
 @roles_required(ROLE_VOLUNTEER)
 def download(registration_id):
     try:
-        cert = certificate_service.issue_certificate(current_user, registration_id)
+        # QR-дағы сілтеме: PUBLIC_URL (баптауда) немесе сұрау келген мекенжай
+        base = current_app.config.get("PUBLIC_URL") or request.url_root
+        cert = certificate_service.issue_certificate(current_user, registration_id, base)
     except ServiceError as exc:
         # Басқа біреудің немесе қатыспаған тіркелімі: 403/404/409 -> түсінікті бет
         abort(exc.status_code if exc.status_code in (403, 404) else 403)
     return send_file(cert["pdf_path"], mimetype="application/pdf", as_attachment=True,
                      download_name=f"{cert['certificate_code']}.pdf")
+
+
+@bp.route("/verify")
+def scan():
+    """Сканер беті. ?code=<мәтін> келсе (QR мазмұны немесе қолмен енгізілген), нөмірді алып тексеру бетіне өтеді."""
+    raw = request.args.get("code", "").strip()
+    if raw:
+        code = certificate_service.extract_code(raw[:300])
+        if code:
+            return redirect(url_for("certificates.verify", code=code))
+        flash("Сертификат нөмірі табылмады. Нөмір мына түрде болуы керек: VP-2026-1A2B3C4D.", "warning")
+    return render_template("certificates/scan.html")
 
 
 @bp.route("/verify/<code>")

@@ -16,6 +16,7 @@
       <h1 class="h4 mt-2">Сертификат табылмады</h1>
       <p class="text-muted mb-0">№ {{ code }} нөмірлі сертификат жүйеде жоқ.</p>
     {% endif %}
+    <a class="btn btn-outline-primary mt-3" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Басқа сертификатты тексеру</a>
     </div>
   </div>
 </div>

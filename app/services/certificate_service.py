@@ -1,12 +1,16 @@
 """PDF-сертификаттар: беру шарттарын тексеру, бірегей нөмір, ReportLab арқылы PDF жасау."""
 import logging
 import os
+import re
 import secrets
 from datetime import datetime
 from pathlib import Path
 
 from flask import current_app
 from PIL import Image
+from reportlab.graphics import renderPDF
+from reportlab.graphics.barcode import qr
+from reportlab.graphics.shapes import Drawing
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4, landscape
@@ -42,6 +46,7 @@ TEXTS = {
         "organizer": "Ұйымдастырушы",
         "number": "Сертификат нөмірі",
         "verify": "Түпнұсқалығын тексеру",
+        "scan": "QR арқылы тексеріңіз",
         "portal": "ЕРІКТІЛЕР ІС-ШАРАЛАРЫ ПОРТАЛЫ",
     },
     "ru": {
@@ -54,6 +59,7 @@ TEXTS = {
         "organizer": "Организатор",
         "number": "Номер сертификата",
         "verify": "Проверка подлинности",
+        "scan": "Проверка по QR-коду",
         "portal": "ПОРТАЛ ВОЛОНТЁРСКИХ МЕРОПРИЯТИЙ",
     },
 }
@@ -90,6 +96,16 @@ def format_date_kz(value: str) -> str:
     """'2026-05-01 10:00' -> '2026 жылғы 1 мамыр'."""
     d = datetime.strptime(value[:10], "%Y-%m-%d")
     return f"{d.year} жылғы {d.day} {KZ_MONTHS[d.month - 1]}"
+
+
+CODE_RE = re.compile(r"VP-\d{4}-[0-9A-F]{8}", re.IGNORECASE)
+
+
+def extract_code(text: str):
+    """QR мәтінінен (толық сілтеме) немесе қолмен енгізілген жолдан сертификат нөмірін алады.
+    Қай сайттың сілтемесі екені маңызды емес: нөмірдің өзі ғана алынады. Табылмаса None."""
+    match = CODE_RE.search(text or "")
+    return match.group(0).upper() if match else None
 
 
 def generate_code(db) -> str:
@@ -182,7 +198,22 @@ def _draw_header(c, w, h, t) -> None:
     _spaced(c, t["portal"], SERIF_BOLD, 14, h - 100, w, 2, GOLD)
 
 
-def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer, city="") -> None:
+def _draw_qr(c, x, y, size, url) -> None:
+    """Ашық түсті тақтайшадағы қою жасыл QR: қою фонда да сканерлеуге ыңғайлы (контраст).
+    QR-дың өз «тыныш аймағы» (quiet zone) тақтайша ішінде қалады."""
+    widget = qr.QrCodeWidget(url, barLevel="M")
+    widget.barFillColor = BG
+    widget.barStrokeColor = BG
+    x0, y0, x1, y1 = widget.getBounds()
+    drawing = Drawing(size, size, transform=[size / (x1 - x0), 0, 0, size / (y1 - y0), 0, 0])
+    drawing.add(widget)
+    c.setFillColor(IVORY)
+    c.roundRect(x, y, size, size, 5, stroke=0, fill=1)
+    renderPDF.draw(drawing, c, x, y)
+
+
+def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer, city="",
+               verify_url="") -> None:
     """QAMQOR стиліндегі A4 альбомдық сертификатты жасайды (мәтін TEXTS[CERT_LANG])."""
     _register_fonts()
     t = TEXTS[CERT_LANG]
@@ -228,7 +259,7 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
 
     c.setFillColor(GOLD)
     c.setFont(SERIF, 12)
-    c.drawCentredString(w / 2, 100, PROJECT_HANDLE)
+    c.drawCentredString(w / 2, 124 if verify_url else 100, PROJECT_HANDLE)
 
     # Төменгі қатар: берілген күні | нөмір және тексеру | ұйымдастырушы
     c.setStrokeColor(GOLD)
@@ -242,15 +273,23 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.drawRightString(w - 80, 62, org if pdfmetrics.stringWidth(org, SERIF, 10) <= 210 else organizer)
     c.setFillColor(GOLD)
     c.setFont(SERIF, 8)
-    c.drawCentredString(w / 2, 66, f"{t['number']}: {code}")
-    c.drawCentredString(w / 2, 54, f"{t['verify']}: /verify/{code}")
+    if verify_url:
+        # Төменгі ортада QR, сол жағында нөмір, оң жағында нұсқау
+        _draw_qr(c, w / 2 - 31, 44, 62, verify_url)
+        c.drawRightString(w / 2 - 40, 72, f"{t['number']}:")
+        c.drawRightString(w / 2 - 40, 61, code)
+        c.drawString(w / 2 + 40, 66, t["scan"])
+    else:
+        c.drawCentredString(w / 2, 66, f"{t['number']}: {code}")
+        c.drawCentredString(w / 2, 54, f"{t['verify']}: /verify/{code}")
     c.showPage()
     c.save()
 
 
-def issue_certificate(actor, registration_id: int):
+def issue_certificate(actor, registration_id: int, base_url: str = ""):
     """Сертификатты береді (бар болса — қайтарады). Тек қатысуы расталған ерікті
-    өз тіркелімі үшін ала алады. Нәтиже: certificates жолы."""
+    өз тіркелімі үшін ала алады. base_url берілсе, PDF-ке /verify/<нөмір> сілтемесі бар QR қосылады.
+    Нәтиже: certificates жолы."""
     db = get_db()
     row = db.execute(
         """SELECT r.id, r.user_id, r.status, u.full_name, e.title, e.event_date, e.city,
@@ -280,7 +319,8 @@ def issue_certificate(actor, registration_id: int):
         pdf_path = str(out_dir / f"certificate_{code}.pdf")
         render_pdf(pdf_path, code=code, volunteer=row["full_name"], event_title=row["title"],
                    event_date=row["event_date"], issued_at=issued_at, organizer=row["organizer_name"],
-                   city=row["city"])
+                   city=row["city"],
+                   verify_url=f"{base_url.rstrip('/')}/verify/{code}" if base_url else "")
         if existing is None:
             tdb.execute(
                 "INSERT INTO certificates (registration_id, certificate_code, issued_at, pdf_path) VALUES (?, ?, ?, ?)",

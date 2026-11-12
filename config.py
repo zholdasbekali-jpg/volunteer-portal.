@@ -38,6 +38,8 @@ class Config:
     SECRET_KEY = _load_secret_key()
     DATABASE = os.environ.get("DATABASE", str(INSTANCE_DIR / "volunteer.db"))
     CERTIFICATE_DIR = os.environ.get("CERTIFICATE_DIR", str(GENERATED_DIR / "certificates"))
+    # QR-кодтағы тексеру сілтемесінің негізі (мыс. https://portal.example.kz). Бос болса — сұрау келген мекенжай.
+    PUBLIC_URL = os.environ.get("PUBLIC_URL", "").strip()
     CSRF_ENABLED = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

@@ -100,14 +100,14 @@ def render_chart(name: str, organizer_id=None) -> bytes:
     plt.rcParams.update({"font.size": 10, "axes.titlesize": 12})
     if name == "summary":
         s = get_summary(organizer_id)
-        labels = ["Events", "Volunteers", "Registrations", "Attended"]
+        labels = ["Іс-шаралар", "Еріктілер", "Тіркелімдер", "Қатысты"]
         values = [s["events_total"], s["volunteers_total"], s["registrations_total"], s["attended_total"]]
         fig, ax = plt.subplots(figsize=(6.5, 4.2))
         bars = ax.bar(labels, values, color=[GREEN, GREEN_LIGHT, AMBER, GREEN_DARK_HEX])
         for b, v in zip(bars, values):
             ax.annotate(str(v), (b.get_x() + b.get_width() / 2, v), ha="center", va="bottom",
                         xytext=(0, 3), textcoords="offset points", fontsize=11, fontweight="bold")
-        ax.set_title("Summary", loc="left", fontweight="bold")
+        ax.set_title("Жалпы көрсеткіштер", loc="left", fontweight="bold")
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         _style(ax)
         return _to_png(fig)
@@ -120,13 +120,13 @@ def render_chart(name: str, organizer_id=None) -> bytes:
         fig, ax = plt.subplots(figsize=(12, max(3.6, 0.8 * len(stats) + 1.6)))
         ys = list(range(len(stats)))
         h = 0.26
-        ax.barh([y - h for y in ys], [s["capacity"] for s in stats], h, label="Capacity", color=GRAY)
-        ax.barh(ys, [s["registered"] for s in stats], h, label="Registered", color=GREEN)
-        ax.barh([y + h for y in ys], [s["attended"] for s in stats], h, label="Attended", color=AMBER)
+        ax.barh([y - h for y in ys], [s["capacity"] for s in stats], h, label="Орын саны", color=GRAY)
+        ax.barh(ys, [s["registered"] for s in stats], h, label="Тіркелді", color=GREEN)
+        ax.barh([y + h for y in ys], [s["attended"] for s in stats], h, label="Қатысты", color=AMBER)
         ax.set_yticks(ys, names)
         ax.invert_yaxis()
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.set_title("Participants per event", loc="left", fontweight="bold")
+        ax.set_title("Іс-шара бойынша қатысушылар", loc="left", fontweight="bold")
         # Легенда графиктің сыртында: бағандарды жаппауы үшін
         ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=3)
         ax.grid(axis="x", color="#e5e7eb")
@@ -144,8 +144,8 @@ def render_chart(name: str, organizer_id=None) -> bytes:
                     xytext=(4, 0), textcoords="offset points", va="center", fontsize=10)
     ax.set_xlim(0, 115)
     ax.invert_yaxis()
-    ax.set_xlabel("Fill rate, %")
-    ax.set_title("Event fill rate", loc="left", fontweight="bold")
+    ax.set_xlabel("Толу көрсеткіші, %")
+    ax.set_title("Іс-шараның толуы", loc="left", fontweight="bold")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     return _to_png(fig)

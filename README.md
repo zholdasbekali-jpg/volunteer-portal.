@@ -1,4 +1,38 @@
+<p align="center"><img src="app/static/images/logo.png" alt="QAMQOR" width="260" style="background:#103309;border-radius:12px;padding:12px"></p>
+
 # Еріктілер іс-шаралары порталы
+
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3-000000?logo=flask)
+![Tests](https://img.shields.io/badge/tests-122%20passed-2f6b1e)
+![Coverage](https://img.shields.io/badge/services%20coverage-96%25-2f6b1e)
+![License](https://img.shields.io/badge/license-MIT-d0b470)
+
+**Volunteer Events Portal** (Flask): іс-шара жариялау, тіркелу, қатысуды растау, QR-кодты PDF-сертификат және оны сайтта тексеру. Интерфейс: қазақша.
+
+<p align="center"><img src="docs/screenshots/readme_catalog.png" alt="Іс-шаралар каталогы" width="820"></p>
+
+## Мүмкіндіктер
+- Каталог: іздеу, 22 қала, күн және мәртебе сүзгісі, бос орын көрсеткіші.
+- Үш рөл: ерікті, ұйымдастырушы, әкімші (сервер жағында тексеріледі).
+- Орын шегі бір мезгілдегі тіркелуден қорғалған (транзакция + UNIQUE).
+- QAMQOR дизайнындағы PDF-сертификат және QR; `/verify` бетінде камера/сурет/нөмір арқылы тексеру.
+- Статистика графиктері; қатысушыларды CSV-ға жүктеу.
+- 122 автоматты тест, бизнес-логика қамтуы 96 %, CSRF, параметрленген SQL.
+
+| Сертификат (QR) | Тексеру | Статистика |
+|---|---|---|
+| <img src="docs/screenshots/readme_certificate.png" width="260"> | <img src="docs/screenshots/readme_verify.png" width="260"> | <img src="docs/screenshots/readme_stats.png" width="260"> |
+
+## Жылдам бастау
+```bash
+pip install -r requirements.txt
+flask --app run init-db && flask --app run seed-demo
+python run.py        # http://127.0.0.1:5000
+```
+Демо-аккаунттар төменде. Толық нұсқаулық: `docs/installation_guide.md`.
+
+---
 
 Flask-та жасалған веб-қосымша: еріктілер іс-шараларды іздейді, тіркеледі, қатысуы расталған соң PDF-сертификат алады; ұйымдастырушылар іс-шараларды және қатысушыларды басқарады; әкімші платформаны бақылайды. Интерфейс тілі: қазақша.
 

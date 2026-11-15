@@ -1,10 +1,13 @@
 """Іс-шаралар каталогы (жария) және ұйымдастырушы панелі."""
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+import csv
+import io
+
+from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from .auth import roles_required
 from .errors import ServiceError
-from .models import CITIES, ROLE_ADMIN, ROLE_ORGANIZER
+from .models import CITIES, REG_STATUS_LABELS, ROLE_ADMIN, ROLE_ORGANIZER
 from .services import certificate_service, event_service, registration_service, statistics_service
 
 bp = Blueprint("events", __name__)
@@ -148,3 +151,31 @@ def participants(event_id):
     except ServiceError as exc:
         abort(exc.status_code)
     return render_template("organizer/participants.html", event=event, regs=regs)
+
+
+def _csv_safe(value) -> str:
+    """Excel формула енгізуінен қорғау: =, +, -, @ белгісімен басталса, алдына ' қойылады."""
+    text = "" if value is None else str(value)
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
+
+
+@bp.route("/organizer/events/<int:event_id>/participants.csv")
+@roles_required(ROLE_ORGANIZER, ROLE_ADMIN)
+def participants_csv(event_id):
+    event = event_service.get_event(event_id)
+    if event is None:
+        abort(404)
+    try:
+        regs = registration_service.list_for_event(current_user, event_id)
+    except ServiceError as exc:
+        abort(exc.status_code)
+    buf = io.StringIO()
+    writer = csv.writer(buf, delimiter=";")
+    writer.writerow(["Ерікті", "Email", "Тіркелген уақыты", "Мәртебесі", "Сертификат нөмірі"])
+    for r in regs:
+        writer.writerow([_csv_safe(r["full_name"]), _csv_safe(r["email"]), r["registered_at"][:16],
+                         REG_STATUS_LABELS.get(r["status"], r["status"]), r["certificate_code"] or ""])
+    # utf-8-sig: Excel қазақ әріптерін дұрыс ашады
+    body = "\ufeff" + buf.getvalue()
+    return Response(body, mimetype="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f"attachment; filename=participants_{event_id}.csv"})

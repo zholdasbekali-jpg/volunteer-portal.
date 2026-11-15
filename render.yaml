@@ -1,0 +1,13 @@
+# Render.com үшін (Blueprint). SQLite файлы үшін тұрақты диск қажет (ақылы жоспар),
+# әйтпесе деректер әр қайта іске қосқанда жоғалады: демо үшін жарайды.
+services:
+  - type: web
+    name: volunteer-portal
+    runtime: python
+    buildCommand: pip install -r requirements-deploy.txt
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PUBLIC_URL
+        sync: false

@@ -10,17 +10,17 @@
 ## Нәтиже
 ```
 python -m pytest
-121 passed
+122 passed
 ```
 | Файл | Тест саны |
 |---|---|
 | test_auth.py | 21 |
-| test_events.py | 26 |
+| test_events.py | 27 |
 | test_registrations.py | 16 |
 | test_admin_and_misc.py | 18 |
 | test_certificates.py | 30 |
 | test_statistics.py | 10 |
-| **Барлығы** | **121** |
+| **Барлығы** | **122** |
 
 ## ТЗ бойынша міндетті 12 тест
 | № | Талап | Тест |

@@ -189,3 +189,22 @@ def test_http_city_filter_and_form(client, make):
     assert 'name="city"' in form_page and "Қызылорда" in form_page
     r = client.post("/organizer/events/new", data=form(city="Атлантида"))
     assert "Қаланы тізімнен таңдаңыз" in r.get_data(as_text=True)
+
+
+def test_participants_csv_export_and_permissions(client, make):
+    owner, other, vol = make.user("organizer"), make.user("organizer"), make.user("volunteer", name="=HYPERLINK(1)")
+    eid = make.event(owner)
+    make.registration(vol, eid, status="attended")
+    url = f"/organizer/events/{eid}/participants.csv"
+    assert client.get(url).status_code in (302, 401)          # кірмеген
+    login(client, other["email"])
+    assert client.get(url).status_code == 403                  # басқа ұйымдастырушы
+    client.post("/logout")
+    login(client, owner["email"])
+    r = client.get(url)
+    assert r.status_code == 200 and r.mimetype == "text/csv"
+    assert "attachment" in r.headers["Content-Disposition"]
+    text = r.get_data(as_text=True)
+    assert text.startswith("﻿") and "Қатысты" in text and vol["email"] in text
+    assert "'=HYPERLINK" in text and ";=HYPERLINK" not in text    # формула енгізуінен қорғау
+    assert client.get("/organizer/events/9999/participants.csv").status_code == 404

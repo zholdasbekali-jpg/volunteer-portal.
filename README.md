@@ -4,8 +4,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3-000000?logo=flask)
-![Tests](https://img.shields.io/badge/tests-122%20passed-2f6b1e)
-![Coverage](https://img.shields.io/badge/services%20coverage-96%25-2f6b1e)
+![Tests](https://img.shields.io/badge/tests-132%20passed-2f6b1e)
+![Coverage](https://img.shields.io/badge/services%20coverage-97%25-2f6b1e)
 ![License](https://img.shields.io/badge/license-MIT-d0b470)
 
 **Volunteer Events Portal** (Flask): іс-шара жариялау, тіркелу, қатысуды растау, QR-кодты PDF-сертификат және оны сайтта тексеру. Интерфейс: қазақша.
@@ -21,8 +21,9 @@
 - Үш рөл: ерікті, ұйымдастырушы, әкімші (сервер жағында тексеріледі).
 - Орын шегі бір мезгілдегі тіркелуден қорғалған (транзакция + UNIQUE).
 - QAMQOR дизайнындағы PDF-сертификат және QR; `/verify` бетінде камера/сурет/нөмір арқылы тексеру.
+- **QR арқылы өзін-өзі белгілеу:** ұйымдастырушы экранында әр 30 секунд сайын жаңаратын QR; ерікті телефонымен сканерлеп, қатысуын өзі растайды (суретке түсіріп жіберу көмектеспейді).
 - Статистика графиктері; қатысушыларды CSV-ға жүктеу.
-- 122 автоматты тест, бизнес-логика қамтуы 96 %, CSRF, параметрленген SQL.
+- 132 автоматты тест, бизнес-логика қамтуы 97 %, CSRF, параметрленген SQL.
 
 | Сертификат (QR) | Тексеру | Статистика |
 |---|---|---|
@@ -72,7 +73,7 @@ http://127.0.0.1:5000
 python -m pytest
 python -m pytest --cov=app/services --cov-report=term-missing
 ```
-Соңғы нәтиже: 122 тест өтті, бизнес-логика қамтуы 96 % (`docs/test_report.md`).
+Соңғы нәтиже: 132 тест өтті, бизнес-логика қамтуы 96 % (`docs/test_report.md`).
 
 ## Тест аккаунттар (тек `seed-demo` жүктелгенде)
 | Рөл | Email | Пароль |
@@ -89,6 +90,9 @@ python -m pytest --cov=app/services --cov-report=term-missing
 - Браузер камерасы тек `https://` немесе `localhost` арқылы жұмыс істейді; басқа жағдайда сурет жүктеу мен қолмен енгізу қолжетімді.
 - QR ішінде `localhost` мекенжайы болса, оны басқа құрылғы ашпайды: нақты мекенжайды `PUBLIC_URL` арқылы беріңіз. Сайттың өз сканері мекенжайға қарамай нөмірді алады.
 - Ескі PDF-тер QR-сыз қалады: `generated/certificates/*.pdf` өшіріп, қайта жүктеңіз.
+
+## Телефоннан кіру
+Bір Wi-Fi желісінде: `HOST=0.0.0.0 python run.py`, телефонда `http://<компьютер IP>:5000`. Толығырақ: `docs/phone_access.md`.
 
 ## Жариялау және жол картасы
 - Интернетке шығару (https): `docs/deployment.md`. Өндірістік іске қосу: `gunicorn wsgi:app` (`requirements-deploy.txt`).

@@ -5,7 +5,7 @@ from flask_login import current_user
 from .auth import roles_required
 from .errors import ServiceError
 from .models import ROLE_VOLUNTEER
-from .services import certificate_service
+from .services import certificate_service, checkin_service
 
 bp = Blueprint("certificates", __name__)
 
@@ -36,6 +36,10 @@ def scan():
     """Сканер беті. ?code=<мәтін> келсе (QR мазмұны немесе қолмен енгізілген), нөмірді алып тексеру бетіне өтеді."""
     raw = request.args.get("code", "").strip()
     if raw:
+        # Іс-шарадағы «қатысуды белгілеу» QR-ы да осы сканерде танылады
+        token = checkin_service.extract_token(raw[:300]) if "/checkin/" in raw else None
+        if token:
+            return redirect(url_for("checkin.confirm", token=token))
         code = certificate_service.extract_code(raw[:300])
         if code:
             return redirect(url_for("certificates.verify", code=code))

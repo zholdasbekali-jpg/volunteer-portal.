@@ -23,5 +23,7 @@
 | 11 | Әкімші панелі | `/admin/` | ![](screenshots/11_admin.png) |
 | — | Мобильді көрініс (390 px) | `/`, `/events`, `/login` | ![](screenshots/12_mobile_home.png) ![](screenshots/13_mobile_catalog.png) ![](screenshots/18_mobile_login.png) |
 | — | 404 беті | кез келген жоқ URL | ![](screenshots/17_404.png) |
+| 10 | QR арқылы белгілеу: ұйымдастырушы экраны | `/organizer/events/<id>/checkin` | ![](screenshots/17_checkin_screen.png) |
+| 10б | Қатысуды растау (телефон) | `/checkin/<белгі>` | ![](screenshots/18_checkin_phone.png) |
 
 Күйлер: бос деректер (мысалы, «Әзірге ешкім тіркелмеген»), қате/ескерту хабарламалары (flash), батырмадағы жүктелу индикаторы (`data-loading`), графиктердің жүктелу/қате күйі, 403/404/500 беттері.

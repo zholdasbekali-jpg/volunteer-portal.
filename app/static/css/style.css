@@ -150,3 +150,9 @@ footer.vp-footer .handle { color: var(--vp-gold); }
   .auth-body { padding: 1.2rem; }
 }
 @media (prefers-reduced-motion: reduce) { .event-card, .event-card:hover { transition: none; transform: none; } }
+
+/* QR арқылы белгілеу экраны */
+.checkin-qr { max-width: 100%; height: auto; background: #fff; padding: 16px; border-radius: 20px; border: 2px solid var(--vp-line, #e2d9bc); }
+.checkin-bar { height: 8px; max-width: 360px; margin: 0 auto; background: #e9e1c6; border-radius: 8px; overflow: hidden; }
+#checkin-bar-fill { height: 100%; width: 100%; background: #5d9a42; transition: width .25s linear; }
+.checkin-count .num { font-family: 'DejaVu Serif', Georgia, serif; font-size: 3rem; line-height: 1; color: #103309; }

@@ -62,8 +62,8 @@ def create_app(config_object=None, **overrides) -> Flask:
     app.jinja_env.globals.update(ROLE_LABELS=ROLE_LABELS, EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,
                                  REG_STATUS_LABELS=REG_STATUS_LABELS)
 
-    from . import admin, auth, certificates, events, registrations, statistics
-    for module in (auth, events, registrations, certificates, statistics, admin):
+    from . import admin, auth, certificates, checkin, events, registrations, statistics
+    for module in (auth, events, registrations, certificates, checkin, statistics, admin):
         app.register_blueprint(module.bp)
 
     register_error_handlers(app)

@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS certificates (
     pdf_path         TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS login_attempts (
+    key          TEXT PRIMARY KEY,          -- 'e:<email>' немесе 'i:<ip>'
+    fails        INTEGER NOT NULL DEFAULT 0,
+    window_start REAL NOT NULL,
+    locked_until REAL NOT NULL DEFAULT 0
+);
+
 CREATE INDEX IF NOT EXISTS idx_events_date       ON events(event_date);
 CREATE INDEX IF NOT EXISTS idx_events_organizer  ON events(organizer_id);
 CREATE INDEX IF NOT EXISTS idx_reg_event         ON registrations(event_id);

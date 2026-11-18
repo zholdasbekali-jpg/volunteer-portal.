@@ -1,13 +1,13 @@
 """Авторизация маршруттары: тіркелу, кіру, шығу + рөлдерді сервер жағында тексеру."""
 from functools import wraps
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from .errors import ServiceError
+from .errors import ServiceError, TooManyAttempts
 from .models import ROLE_ORGANIZER, ROLE_VOLUNTEER, User
 from .security import is_safe_next
-from .services import auth_service
+from .services import auth_service, throttle_service
 
 bp = Blueprint("auth", __name__)
 
@@ -61,15 +61,25 @@ def login():
     form = {}
     if request.method == "POST":
         form = request.form
+        email, ip = form.get("email", ""), request.remote_addr
         try:
-            row = auth_service.authenticate(form.get("email"), form.get("password"))
+            throttle_service.check(email, ip)
+            try:
+                row = auth_service.authenticate(email, form.get("password"))
+            except ServiceError:
+                throttle_service.record_failure(email, ip)
+                raise
+            throttle_service.reset(email)
             user = User(row)
+            session.clear()          # session fixation-ге қарсы: кіргенде сессия жаңартылады
             login_user(user)
             flash(f"Қош келдіңіз, {user.full_name}!", "success")
             nxt = request.args.get("next", "")
             return redirect(nxt if is_safe_next(nxt) else home_for(user))
         except ServiceError as exc:
             flash(exc.message, "danger")
+            if isinstance(exc, TooManyAttempts):
+                return render_template("auth/login.html", form=form), 429
     return render_template("auth/login.html", form=form)
 
 

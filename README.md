@@ -74,7 +74,7 @@ http://127.0.0.1:5000
 python -m pytest
 python -m pytest --cov=app/services --cov-report=term-missing
 ```
-Соңғы нәтиже: 163 тест өтті, бизнес-логика қамтуы 96 % (`docs/test_report.md`).
+Соңғы нәтиже: 163 тест өтті, бизнес-логика қамтуы 97 % (`docs/test_report.md`).
 
 ## Тест аккаунттар (тек `seed-demo` жүктелгенде)
 | Рөл | Email | Пароль |

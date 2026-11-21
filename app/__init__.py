@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 from flask import Flask, render_template, request, url_for
 from flask_login import LoginManager, current_user
+from werkzeug.routing import IntegerConverter
 
 from config import Config
 
@@ -29,8 +30,16 @@ def kz_datetime(value: str, with_time: bool = True) -> str:
     return f"{text}, {value[11:16]}" if with_time and len(value) >= 16 else text
 
 
+class SafeIntConverter(IntegerConverter):
+    """<int:id> SQLite INTEGER диапазонынан аспайды: өте үлкен сан 500 емес, 404 береді."""
+
+    def __init__(self, map, fixed_digits=0, min=None, max=2 ** 63 - 1, signed=False):
+        super().__init__(map, fixed_digits=fixed_digits, min=min, max=max, signed=signed)
+
+
 def create_app(config_object=None, **overrides) -> Flask:
     app = Flask(__name__)
+    app.url_map.converters["int"] = SafeIntConverter
     app.config.from_object(config_object or Config)
     app.config.update(overrides)
     Path(app.config["CERTIFICATE_DIR"]).mkdir(parents=True, exist_ok=True)

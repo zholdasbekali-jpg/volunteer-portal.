@@ -157,3 +157,17 @@ def test_role_escalation_via_forms_is_impossible(client, make):
     assert client.post("/cabinet/profile", data={"full_name": "Тест", "role": "admin"}).status_code == 302
     from app.services import auth_service
     assert auth_service.get_user(v["id"])["role"] == "volunteer"
+
+
+@pytest.mark.parametrize("path", ["/events/99999999999999999999", "/events/9223372036854775808",
+                                  "/certificates/99999999999999999999/download",
+                                  "/organizer/events/99999999999999999999/edit",
+                                  "/organizer/events/99999999999999999999/participants.csv"])
+def test_huge_ids_give_404_not_500(client, make, path):
+    org = make.user("organizer")
+    login(client, org["email"])
+    assert client.get(path).status_code == 404
+
+
+def test_largest_valid_id_still_routes(client, make):
+    assert client.get("/events/9223372036854775807").status_code == 404   # сан дұрыс, жазба жоқ

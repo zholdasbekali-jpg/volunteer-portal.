@@ -25,5 +25,9 @@
 | — | 404 беті | кез келген жоқ URL | ![](screenshots/17_404.png) |
 | 10 | QR арқылы белгілеу: ұйымдастырушы экраны | `/organizer/events/<id>/checkin` | ![](screenshots/17_checkin_screen.png) |
 | 10б | Қатысуды растау (телефон) | `/checkin/<белгі>` | ![](screenshots/18_checkin_phone.png) |
+| 11 | Жеке кабинет (ерікті) | `/cabinet/` | ![](screenshots/19_cabinet_volunteer.png) |
+| 11б | Жеке кабинет (ұйымдастырушы) | `/cabinet/` | ![](screenshots/20_cabinet_organizer.png) |
+| 11в | Жеке кабинет (әкімші) | `/cabinet/` | ![](screenshots/21_cabinet_admin.png) |
+| 11г | Жеке кабинет (телефон) | `/cabinet/` | ![](screenshots/22_cabinet_phone.png) |
 
 Күйлер: бос деректер (мысалы, «Әзірге ешкім тіркелмеген»), қате/ескерту хабарламалары (flash), батырмадағы жүктелу индикаторы (`data-loading`), графиктердің жүктелу/қате күйі, 403/404/500 беттері.

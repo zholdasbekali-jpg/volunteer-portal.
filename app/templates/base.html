@@ -12,7 +12,7 @@
 </head>
 <body>
   {% set ep = request.endpoint or '' %}
-  <nav class="navbar navbar-expand-lg vp-nav sticky-top" data-bs-theme="dark">
+  <nav class="navbar navbar-expand-xl vp-nav sticky-top" data-bs-theme="dark">
     <div class="container">
       <a class="navbar-brand vp-brand" href="{{ url_for('events.index') }}">
         <img class="vp-logo" src="{{ static_url('images/logo.png') }}" alt="QAMQOR — Еріктілер порталы">
@@ -21,7 +21,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
+        <ul class="navbar-nav me-auto gap-xl-1 mt-2 mt-xl-0">
           <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('events.catalog','events.detail') }}" href="{{ url_for('events.catalog') }}">Іс-шаралар</a></li>
           <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('certificates.scan','certificates.verify') }}" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Сертификатты тексеру</a></li>
           {% if current_user.is_authenticated %}
@@ -37,10 +37,10 @@
             {% endif %}
           {% endif %}
         </ul>
-        <div class="d-flex align-items-lg-center gap-2 flex-column flex-lg-row mt-2 mt-lg-0">
+        <div class="d-flex align-items-xl-center gap-2 flex-column flex-xl-row mt-2 mt-xl-0">
           {% if current_user.is_authenticated %}
-            <span class="small vp-nav-user"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
-              <span class="badge-soft b-role ms-1">{{ current_user.role_label }}</span></span>
+            <a class="small vp-nav-user text-decoration-none {{ 'active' if ep.startswith('cabinet.') }}" href="{{ url_for('cabinet.index') }}" title="Жеке кабинет"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
+              <span class="badge-soft b-role ms-1">{{ current_user.role_label }}</span></a>
             <form method="post" action="{{ url_for('auth.logout') }}">{{ m.csrf() }}
               <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Шығу</button>
             </form>

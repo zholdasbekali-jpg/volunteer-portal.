@@ -37,7 +37,11 @@ h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 { letter-spacing: -.01em; font-weigh
 .vp-nav .nav-link { color: var(--vp-ivory); font-weight: 500; border-radius: 10px; padding: .45rem .8rem !important; }
 .vp-nav .nav-link:hover { background: rgba(244, 239, 224, .12); }
 .vp-nav .nav-link.active { background: rgba(208, 180, 112, .18); color: var(--vp-gold); }
-.vp-nav-user { color: rgba(244, 239, 224, .8); }
+.vp-nav-user { color: rgba(244, 239, 224, .8); display: inline-flex; align-items: center; gap: .35rem; max-width: 100%; }
+.vp-nav-user:hover, .vp-nav-user.active { color: #f4efe0; }
+.vp-nav .nav-link { white-space: nowrap; }
+@media (min-width: 1200px) and (max-width: 1399px) { .vp-nav-user .badge-soft { display: none; } }
+@media (min-width: 1200px) { .vp-nav-user { max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
 
 /* Батырмалар */
 .btn { border-radius: 12px; font-weight: 600; padding: .55rem 1.05rem; }
@@ -156,3 +160,10 @@ footer.vp-footer .handle { color: var(--vp-gold); }
 .checkin-bar { height: 8px; max-width: 360px; margin: 0 auto; background: #e9e1c6; border-radius: 8px; overflow: hidden; }
 #checkin-bar-fill { height: 100%; width: 100%; background: #5d9a42; transition: width .25s linear; }
 .checkin-count .num { font-family: 'DejaVu Serif', Georgia, serif; font-size: 3rem; line-height: 1; color: #103309; }
+
+/* Жеке кабинет */
+.cabinet-head { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; }
+.cabinet-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--vp-forest-2, #1b4d12); color: #f4efe0;
+  display: flex; align-items: center; justify-content: center; font-family: 'DejaVu Serif', Georgia, serif; font-size: 1.75rem; flex: none; }
+.cabinet-list > li { padding: .85rem 0; border-top: 1px solid #ece4c8; }
+.cabinet-list > li:first-child { border-top: 0; padding-top: .25rem; }

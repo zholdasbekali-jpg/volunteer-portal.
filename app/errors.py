@@ -33,3 +33,9 @@ class Conflict(ServiceError):
     """Бизнес-ереже бұзылды (орын жоқ, қайталанған тіркелу, т.б.)."""
 
     status_code = 409
+
+
+class TooManyAttempts(ServiceError):
+    """Өте көп сәтсіз әрекет: уақытша бұғатталды."""
+
+    status_code = 429

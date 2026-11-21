@@ -11,3 +11,7 @@ services:
         generateValue: true
       - key: PUBLIC_URL
         sync: false
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SESSION_COOKIE_SECURE
+        value: "1"

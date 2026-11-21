@@ -3,7 +3,8 @@ from pathlib import Path
 
 import click
 from flask import Flask, render_template, request, url_for
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
+from werkzeug.routing import IntegerConverter
 
 from config import Config
 
@@ -29,12 +30,25 @@ def kz_datetime(value: str, with_time: bool = True) -> str:
     return f"{text}, {value[11:16]}" if with_time and len(value) >= 16 else text
 
 
+class SafeIntConverter(IntegerConverter):
+    """<int:id> SQLite INTEGER диапазонынан аспайды: өте үлкен сан 500 емес, 404 береді."""
+
+    def __init__(self, map, fixed_digits=0, min=None, max=2 ** 63 - 1, signed=False):
+        super().__init__(map, fixed_digits=fixed_digits, min=min, max=max, signed=signed)
+
+
 def create_app(config_object=None, **overrides) -> Flask:
     app = Flask(__name__)
+    app.url_map.converters["int"] = SafeIntConverter
     app.config.from_object(config_object or Config)
     app.config.update(overrides)
     Path(app.config["CERTIFICATE_DIR"]).mkdir(parents=True, exist_ok=True)
     Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
+
+    if app.config.get("TRUST_PROXY"):
+        # Render/Heroku сияқты проксидің артында: нақты IP мен https схемасын X-Forwarded-* арқылы алу
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     login_manager.init_app(app)
     app.teardown_appcontext(database.close_db)
@@ -62,8 +76,8 @@ def create_app(config_object=None, **overrides) -> Flask:
     app.jinja_env.globals.update(ROLE_LABELS=ROLE_LABELS, EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,
                                  REG_STATUS_LABELS=REG_STATUS_LABELS)
 
-    from . import admin, auth, certificates, checkin, events, registrations, statistics
-    for module in (auth, events, registrations, certificates, checkin, statistics, admin):
+    from . import admin, auth, cabinet, certificates, checkin, events, registrations, statistics
+    for module in (auth, events, registrations, certificates, checkin, cabinet, statistics, admin):
         app.register_blueprint(module.bp)
 
     register_error_handlers(app)
@@ -73,12 +87,26 @@ def create_app(config_object=None, **overrides) -> Flask:
     def security_headers(resp):
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
         resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        # Камера тек өз сайтымызға (QR-сканер) рұқсат; микрофон, геолокация өшірулі
+        resp.headers.setdefault("Permissions-Policy", "camera=(self), microphone=(), geolocation=(), payment=()")
+        resp.headers.setdefault("Content-Security-Policy", CSP)
+        if app.config.get("SESSION_COOKIE_SECURE"):
+            resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
+        # Жеке беттер шыққаннан кейін «Артқа» батырмасымен кэштен көрінбеуі үшін
+        if current_user.is_authenticated and not request.path.startswith("/static/"):
+            resp.headers["Cache-Control"] = "no-store"
         return resp
 
     with app.app_context():
         database.init_db()
     return app
 
+
+# Барлық скрипт пен стиль өз сайтымыздан; сыртқы мекенжайға форма жіберуге, frame-ге салуға тыйым
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+       "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self' blob:; "
+       "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
 
 ERROR_TEXT = {
     400: ("Сұрау қате", "Сұрауды өңдеу мүмкін болмады."),

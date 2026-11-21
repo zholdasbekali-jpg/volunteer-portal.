@@ -10,7 +10,7 @@
 ## Нәтиже
 ```
 python -m pytest
-132 passed
+163 passed
 ```
 | Файл | Тест саны |
 |---|---|
@@ -20,8 +20,10 @@ python -m pytest
 | test_admin_and_misc.py | 18 |
 | test_certificates.py | 30 |
 | test_checkin.py | 10 |
+| test_cabinet.py | 11 |
+| test_security.py | 20 |
 | test_statistics.py | 10 |
-| **Барлығы** | **132** |
+| **Барлығы** | **163** |
 
 ## ТЗ бойынша міндетті 12 тест
 | № | Талап | Тест |
@@ -47,7 +49,7 @@ python -m pytest
 - Нақты телефонда, Windows-та және Termux-та тексерілмеген.
 
 ## Қамту (pytest-cov)
-Бизнес-логика (`app/services`): **96 %** (617 жол, 22 өткізілген).
+Бизнес-логика (`app/services`): **97 %** (782 жол, 26 өткізілген).
 
 | Модуль | Қамту |
 |---|---|

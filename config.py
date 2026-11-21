@@ -43,6 +43,12 @@ class Config:
     CSRF_ENABLED = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+    # https-те жұмыс істегенде SESSION_COOKIE_SECURE=1 қойыңыз (кукилер тек шифрланған байланыспен жіберіледі)
+    SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", PUBLIC_URL.startswith("https://"))
+    # Render сияқты проксидің артында TRUST_PROXY=1: IP мен https дұрыс танылады
+    TRUST_PROXY = _env_bool("TRUST_PROXY", False)
+    REMEMBER_COOKIE_HTTPONLY = True
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 12  # 12 сағат
     MAX_CONTENT_LENGTH = 1024 * 1024  # 1 МБ: форма деректері үшін жеткілікті
 
 

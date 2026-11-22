@@ -24,6 +24,7 @@
         <ul class="navbar-nav me-auto gap-xl-1 mt-2 mt-xl-0">
           <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('events.catalog','events.detail') }}" href="{{ url_for('events.catalog') }}">Іс-шаралар</a></li>
           <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('certificates.scan','certificates.verify') }}" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Сертификатты тексеру</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'volunteers.rating' }}" href="{{ url_for('volunteers.rating') }}"><i class="bi bi-trophy"></i> Рейтинг</a></li>
           {% if current_user.is_authenticated %}
             {% if current_user.is_volunteer %}
               <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'registrations.my_registrations' }}" href="{{ url_for('registrations.my_registrations') }}">Менің тіркелімдерім</a></li>

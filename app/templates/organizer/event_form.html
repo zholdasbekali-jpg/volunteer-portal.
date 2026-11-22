@@ -31,15 +31,21 @@
       </div>
     </div>
     <div class="row g-3 mb-4">
-      <div class="col-md-7">
+      <div class="col-md-5">
         <label class="form-label" for="event_date">Күні мен уақыты *</label>
         <input class="form-control" id="event_date" name="event_date" type="datetime-local" required value="{{ form.get('event_date', '') }}">
         <div class="invalid-feedback">Күні мен уақытын таңдаңыз.</div>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-4">
         <label class="form-label" for="capacity">Қатысушылардың ең көп саны *</label>
         <input class="form-control" id="capacity" name="capacity" type="number" min="1" max="10000" required value="{{ form.get('capacity', '') }}">
         <div class="invalid-feedback">1-ден 10000-ға дейінгі сан.</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="hours">Ұзақтығы (сағат) *</label>
+        <input class="form-control" id="hours" name="hours" type="number" min="1" max="24" required value="{{ form.get('hours', 3) }}">
+        <div class="form-text">Қатысқан еріктіге осынша волонтёрлік сағат жазылады.</div>
+        <div class="invalid-feedback">1-ден 24-ке дейінгі сан.</div>
       </div>
     </div>
     <div class="d-flex gap-2">

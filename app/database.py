@@ -96,6 +96,18 @@ def init_db() -> None:
     if "city" not in {r["name"] for r in db.execute("PRAGMA table_info(events)")}:
         db.execute("ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT ''")
     db.execute("CREATE INDEX IF NOT EXISTS idx_events_city ON events(city)")
+    # V2: іс-шара ұзақтығы (волонтёрлік сағат) және ерікті жария ID-і
+    if "hours" not in {r["name"] for r in db.execute("PRAGMA table_info(events)")}:
+        db.execute("ALTER TABLE events ADD COLUMN hours INTEGER NOT NULL DEFAULT 3")
+    ucols = {r["name"] for r in db.execute("PRAGMA table_info(users)")}
+    if "public_code" not in ucols:
+        db.execute("ALTER TABLE users ADD COLUMN public_code TEXT")
+    if "id_public" not in ucols:
+        db.execute("ALTER TABLE users ADD COLUMN id_public INTEGER NOT NULL DEFAULT 1")
+    db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_code ON users(public_code)")
+    from .services.volunteer_service import ensure_codes  # ескі пайдаланушыларға ID береміз
+    ensure_codes(db)
+    db.commit()
 
 
 @contextmanager

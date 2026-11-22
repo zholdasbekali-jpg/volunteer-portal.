@@ -26,6 +26,8 @@
 | `app/events.py` | Каталог, толық бет, ұйымдастырушы панелі, іс-шара CRUD, қатысушылар беті |
 | `app/registrations.py` | Тіркелу, бас тарту, жеке кабинет, қатысу мәртебесі |
 | `app/certificates.py` | Сертификат беті, PDF жүктеу, `/verify` (QR-сканер), `/verify/<код>` |
+| `app/volunteers.py`, `services/volunteer_service.py`, `services/rating_service.py` | Volunteer ID, жетістіктер, рейтинг |
+| `services/search_service.py` | Ақылды іздеу: сұрауды қала/уақыт/тақырыпқа бөлу |
 | `app/cabinet.py`, `services/profile_service.py` | Жеке кабинет: профиль, құпиясөз, рөлге қарай жиынтық |
 | `services/throttle_service.py` | Кіру әрекеттерін шектеу (деректер қорында) |
 | `app/checkin.py`, `services/checkin_service.py` | QR арқылы өзін-өзі белгілеу: ұйымдастырушы экраны (динамикалық QR), ерікті растау беті; HMAC қол қойылған 30 с белгі, уақыт терезесі |

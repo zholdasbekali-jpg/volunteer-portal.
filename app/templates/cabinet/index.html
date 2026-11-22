@@ -17,6 +17,7 @@
       <a class="btn btn-primary" href="{{ url_for('events.catalog') }}"><i class="bi bi-search"></i> Іс-шара табу</a>
       <a class="btn btn-outline-primary" href="{{ url_for('registrations.my_registrations') }}"><i class="bi bi-list-check"></i> Тіркелімдерім</a>
       <a class="btn btn-outline-primary" href="{{ url_for('certificates.list_certificates') }}"><i class="bi bi-award"></i> Сертификаттар</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('volunteers.my_card') }}"><i class="bi bi-person-badge"></i> Volunteer ID</a>
     {% elif profile.role == 'organizer' %}
       <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg"></i> Жаңа іс-шара</a>
       <a class="btn btn-outline-primary" href="{{ url_for('events.organizer_dashboard') }}"><i class="bi bi-speedometer2"></i> Панель</a>

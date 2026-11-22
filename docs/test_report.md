@@ -10,7 +10,7 @@
 ## Нәтиже
 ```
 python -m pytest
-163 passed
+204 passed
 ```
 | Файл | Тест саны |
 |---|---|
@@ -22,8 +22,9 @@ python -m pytest
 | test_checkin.py | 10 |
 | test_cabinet.py | 11 |
 | test_security.py | 20 |
+| test_v2.py | 41 |
 | test_statistics.py | 10 |
-| **Барлығы** | **163** |
+| **Барлығы** | **204** |
 
 ## ТЗ бойынша міндетті 12 тест
 | № | Талап | Тест |

@@ -8,7 +8,8 @@ from flask_login import current_user
 from .auth import roles_required
 from .errors import ServiceError
 from .models import CITIES, REG_STATUS_LABELS, ROLE_ADMIN, ROLE_ORGANIZER
-from .services import certificate_service, event_service, registration_service, statistics_service
+from .services import (certificate_service, event_service, registration_service, search_service,
+                       statistics_service)
 
 bp = Blueprint("events", __name__)
 STATUS_FILTERS = (("", "Барлығы"), ("upcoming", "Алдағы"),
@@ -43,7 +44,8 @@ def catalog():
         groups = [("Алдағы іс-шаралар", upcoming), ("Өткен іс-шаралар", past)]
     else:
         groups = [(dict(STATUS_FILTERS)[status] + " іс-шаралар", events)]
-    return render_template("events/list.html", groups=groups, total=len(events),
+    hints = search_service.parse(q)["labels"] if q else []
+    return render_template("events/list.html", groups=groups, total=len(events), hints=hints,
                            q=q, date=date, status=status, city=city, cities=CITIES,
                            status_filters=STATUS_FILTERS)
 
@@ -95,7 +97,7 @@ def edit(event_id):
         abort(404)
     if not event_service.can_manage(event, current_user):
         abort(403)  # басқа ұйымдастырушының іс-шарасы
-    form = {k: event[k] for k in ("title", "description", "city", "location", "capacity")}
+    form = {k: event[k] for k in ("title", "description", "city", "location", "capacity", "hours")}
     form["event_date"] = event["event_date"].replace(" ", "T")
     if request.method == "POST":
         form = request.form

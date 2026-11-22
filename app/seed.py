@@ -46,8 +46,8 @@ def seed_demo() -> str:
     with transaction() as tdb:
         for title, desc, city, loc, when, cap, org in events:
             cur = tdb.execute(
-                "INSERT INTO events (title, description, city, location, event_date, capacity, organizer_id) VALUES (?,?,?,?,?,?,?)",
-                (title, desc, city, loc, when, cap, org))
+                "INSERT INTO events (title, description, city, location, event_date, capacity, hours, organizer_id) VALUES (?,?,?,?,?,?,?,?)",
+                (title, desc, city, loc, when, cap, 2 + len(title) % 4, org))
             ids.append(cur.lastrowid)
         # Тіркелімдер: өткен іс-шараларға қатысу белгіленген, толған іс-шара да бар
         plan = [(0, vols[0], "attended"), (0, vols[1], "attended"), (0, vols[2], "absent"),

@@ -6,8 +6,8 @@
 <form class="vp-card vp-card-pad mb-4" method="get" action="{{ url_for('events.catalog') }}">
   <div class="row g-3 align-items-end">
     <div class="col-lg-3">
-      <label class="form-label" for="q">Атауы немесе мекенжайы</label>
-      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Мысалы: саябақ">
+      <label class="form-label" for="q">Іздеу (сөз, қала, уақыт)</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Мысалы: экология Қызылордада осы апта">
     </div>
     <div class="col-sm-6 col-lg-2">
       <label class="form-label" for="city">Қала</label>
@@ -33,6 +33,10 @@
   </div>
 </form>
 
+{% if hints %}
+  <p class="small text-muted mb-3"><i class="bi bi-lightbulb"></i> Түсінген іздеу:
+    {% for h in hints %}<span class="badge-soft b-role me-1 text-nowrap d-inline-block mb-1">{{ h }}</span>{% endfor %}</p>
+{% endif %}
 {% if total == 0 %}
   <div class="vp-card">{{ m.empty('search', 'Іс-шаралар табылмады. Іздеу шарттарын өзгертіп көріңіз.') }}</div>
 {% else %}

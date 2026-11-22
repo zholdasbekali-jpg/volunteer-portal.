@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..database import get_db, transaction
 from ..errors import Conflict, NotFound, PermissionDenied, ValidationError
+from .volunteer_service import new_code
 from ..models import ROLES, SELF_REGISTER_ROLES, ROLE_ADMIN, ROLE_VOLUNTEER
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}$")
@@ -48,8 +49,8 @@ def register_user(full_name: str, email: str, password: str, role: str = ROLE_VO
     try:
         with transaction() as db:
             cur = db.execute(
-                "INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-                (full_name, email, generate_password_hash(password), role),
+                "INSERT INTO users (full_name, email, password_hash, role, public_code) VALUES (?, ?, ?, ?, ?)",
+                (full_name, email, generate_password_hash(password), role, new_code(db)),
             )
             return cur.lastrowid
     except sqlite3.IntegrityError:
@@ -66,8 +67,8 @@ def create_user_unchecked(full_name, email, password, role):
     try:
         with transaction() as db:
             cur = db.execute(
-                "INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-                (full_name.strip(), email, generate_password_hash(password), role),
+                "INSERT INTO users (full_name, email, password_hash, role, public_code) VALUES (?, ?, ?, ?, ?)",
+                (full_name.strip(), email, generate_password_hash(password), role, new_code(db)),
             )
             return cur.lastrowid
     except sqlite3.IntegrityError:

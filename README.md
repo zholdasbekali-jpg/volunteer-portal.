@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3-000000?logo=flask)
-![Tests](https://img.shields.io/badge/tests-163%20passed-2f6b1e)
+![Tests](https://img.shields.io/badge/tests-204%20passed-2f6b1e)
 ![Coverage](https://img.shields.io/badge/services%20coverage-97%25-2f6b1e)
 ![License](https://img.shields.io/badge/license-MIT-d0b470)
 
@@ -24,7 +24,7 @@
 - QAMQOR дизайнындағы PDF-сертификат және QR; `/verify` бетінде камера/сурет/нөмір арқылы тексеру.
 - **QR арқылы өзін-өзі белгілеу:** ұйымдастырушы экранында әр 30 секунд сайын жаңаратын QR; ерікті телефонымен сканерлеп, қатысуын өзі растайды (суретке түсіріп жіберу көмектеспейді).
 - Статистика графиктері; қатысушыларды CSV-ға жүктеу.
-- 163 автоматты тест, қамту 97 %, CSRF, параметрленген SQL.
+- 204 автоматты тест, қамту 97 %, CSRF, параметрленген SQL.
 
 | Сертификат (QR) | Тексеру | Статистика |
 |---|---|---|
@@ -74,7 +74,7 @@ http://127.0.0.1:5000
 python -m pytest
 python -m pytest --cov=app/services --cov-report=term-missing
 ```
-Соңғы нәтиже: 163 тест өтті, бизнес-логика қамтуы 97 % (`docs/test_report.md`).
+Соңғы нәтиже: 204 тест өтті, бизнес-логика қамтуы 97 % (`docs/test_report.md`).
 
 ## Тест аккаунттар (тек `seed-demo` жүктелгенде)
 | Рөл | Email | Пароль |

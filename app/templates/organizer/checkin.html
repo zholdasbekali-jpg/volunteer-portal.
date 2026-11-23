@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}QR арқылы белгілеу · {{ event.title }}{% endblock %}
+{% block title %}{{ _('QR арқылы белгілеу') }} · {{ event.title }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small">
-  <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">Панель</a></li>
-  <li class="breadcrumb-item"><a href="{{ url_for('events.participants', event_id=event.id) }}">Қатысушылар</a></li>
-  <li class="breadcrumb-item active">QR арқылы белгілеу</li>
+  <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">{{ _('Панель') }}</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('events.participants', event_id=event.id) }}">{{ _('Қатысушылар') }}</a></li>
+  <li class="breadcrumb-item active">{{ _('QR арқылы белгілеу') }}</li>
 </ol></nav>
 <div class="row justify-content-center"><div class="col-lg-8 col-xl-7">
   <div class="vp-card vp-card-pad text-center" id="checkin" data-qr="{{ url_for('checkin.qr_svg', event_id=event.id) }}"
        data-stats="{{ url_for('checkin.stats', event_id=event.id) }}" data-step="{{ step }}">
     <h1 class="h4 mb-1">{{ event.title }}</h1>
-    <p class="text-muted">Еріктілер өз телефонымен осы QR-ды сканерлеп, қатысуын өздері белгілейді.</p>
-    <img id="checkin-qr" class="checkin-qr" src="{{ url_for('checkin.qr_svg', event_id=event.id) }}" alt="Қатысуды белгілеу QR-коды" width="360" height="360">
+    <p class="text-muted">{{ _('Еріктілер өз телефонымен осы QR-ды сканерлеп, қатысуын өздері белгілейді.') }}</p>
+    <img id="checkin-qr" class="checkin-qr" src="{{ url_for('checkin.qr_svg', event_id=event.id) }}" alt="{{ _('Қатысуды белгілеу QR-коды') }}" width="360" height="360">
     <div class="checkin-bar mt-3"><div id="checkin-bar-fill"></div></div>
-    <div class="small text-muted mt-2">QR әр {{ step }} секунд сайын жаңарады: суретке түсіріп жіберу көмектеспейді.</div>
+    <div class="small text-muted mt-2">{{ _('QR әр {n} секунд сайын жаңарады: суретке түсіріп жіберу көмектеспейді.', n=step) }}</div>
     <div class="checkin-count mt-4">
       <div class="num"><span id="checkin-attended">{{ attended }}</span> / <span id="checkin-total">{{ total }}</span></div>
-      <div class="small text-muted">қатысты / тіркелген</div>
+      <div class="small text-muted">{{ _('қатысты / тіркелген') }}</div>
     </div>
-    <div class="alert alert-warning small text-start mt-4 mb-0">Белгілеу іс-шарадан 2 сағат бұрын ашылады және басталғаннан 24 сағаттан кейін жабылады. Ерікті алдымен тіркелген болуы керек.</div>
+    <div class="alert alert-warning small text-start mt-4 mb-0">{{ _('Белгілеу іс-шарадан 2 сағат бұрын ашылады және басталғаннан 24 сағаттан кейін жабылады. Ерікті алдымен тіркелген болуы керек.') }}</div>
   </div>
 </div></div>
 {% endblock %}

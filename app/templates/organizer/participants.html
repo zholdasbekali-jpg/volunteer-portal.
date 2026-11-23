@@ -1,44 +1,83 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Қатысушылар · {{ event.title }}{% endblock %}
+{% block title %}{{ _('Қатысушылар') }} · {{ event.title }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small">
-  <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">Панель</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">{{ _('Панель') }}</a></li>
   <li class="breadcrumb-item"><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.title }}</a></li>
-  <li class="breadcrumb-item active">Қатысушылар</li>
+  <li class="breadcrumb-item active">{{ _('Қатысушылар') }}</li>
 </ol></nav>
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <div><h1 class="h3 mb-1">Қатысушыларды басқару</h1>
-    <div class="text-muted">{{ event.title }} · {{ event | full_address }} · {{ event.event_date | kz_datetime }} · тіркелген: {{ regs | length }} / {{ event.capacity }}</div></div>
-  <div class="d-flex gap-2">
-    <a class="btn btn-primary btn-sm" href="{{ url_for('checkin.screen', event_id=event.id) }}"><i class="bi bi-qr-code"></i> QR арқылы белгілеу</a>
-    {% if regs %}<a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants_csv', event_id=event.id) }}"><i class="bi bi-filetype-csv"></i> CSV жүктеу</a>{% endif %}
+<div class="vp-page-head">
+  <div><h1 class="h3 mb-1"><i class="bi bi-people me-2"></i>{{ _('Қатысушыларды басқару') }}</h1>
+    <div class="text-muted">{{ event.title }} · {{ event | full_address }} · {{ event.event_date | kz_datetime }}</div>
+    <div class="vp-result-line">{{ _('Тіркелген') }}: <b>{{ regs | length }}</b> / {{ event.capacity }}</div></div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary btn-sm" href="{{ url_for('checkin.screen', event_id=event.id) }}"><i class="bi bi-qr-code me-1"></i> {{ _('QR арқылы белгілеу') }}</a>
+    {% if regs %}<a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants_csv', event_id=event.id) }}"><i class="bi bi-filetype-csv me-1"></i> {{ _('CSV жүктеу') }}</a>{% endif %}
   </div>
 </div>
+
+<form class="vp-filterbar mb-3" method="get" action="{{ url_for('events.participants', event_id=event.id) }}">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-lg-5"><label class="form-label" for="q">{{ _('Іздеу') }}</label><input class="form-control" id="q" name="q" value="{{ f.q }}" placeholder="{{ _('Аты-жөні немесе email') }}"></div>
+    <div class="col-6 col-lg-2"><label class="form-label" for="status">{{ _('Мәртебесі') }}</label><select class="form-select" id="status" name="status"><option value="">{{ _('Барлығы') }}</option>{% for value, label in reg_statuses %}<option value="{{ value }}" {{ 'selected' if value == f.status }}>{{ _(label) }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-lg-2"><label class="form-label" for="sort">{{ _('Сұрыптау') }}</label><select class="form-select" id="sort" name="sort"><option value="date" {{ 'selected' if f.sort == 'date' }}>{{ _('Тіркелген уақыты') }}</option><option value="name" {{ 'selected' if f.sort == 'name' }}>{{ _('Аты-жөні (А–Я)') }}</option><option value="status" {{ 'selected' if f.sort == 'status' }}>{{ _('Мәртебесі') }}</option></select></div>
+    <div class="col-12 col-lg-3 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.q or f.status or f.sort != 'date' %}<a class="btn btn-outline-secondary" href="{{ url_for('events.participants', event_id=event.id) }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+  </div>
+</form>
+
+<form id="vp-bulk" class="vp-bulkbar mb-3" method="post" action="{{ url_for('events.bulk_participant_status', event_id=event.id) }}">
+  {{ m.csrf() }}
+  <input type="hidden" name="q" value="{{ f.q }}"><input type="hidden" name="filter_status" value="{{ f.status }}"><input type="hidden" name="sort" value="{{ f.sort }}">
+  <span class="vp-bulk-title"><i class="bi bi-check2-square me-1"></i>{{ _('Таңдалғандар үшін әрекет') }}</span>
+  <select class="form-select form-select-sm" name="status" aria-label="{{ _('Мәртебені таңдау') }}">
+    <option value="">{{ _('Мәртебені таңдау') }}</option>
+    <option value="attended">{{ _('Қатысты') }}</option><option value="absent">{{ _('Қатыспады') }}</option><option value="pending">{{ _('Расталмаған') }}</option>
+  </select>
+  <button class="btn btn-outline-primary btn-sm" type="submit" data-bulk-apply="vp-bulk" disabled><i class="bi bi-check2 me-1"></i>{{ _('Қолдану') }}</button>
+</form>
+
+<div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ regs | length }}</b></div>
 {% if regs %}
-<div class="vp-card"><div class="table-responsive"><table class="table vp-table">
-  <thead><tr><th>Ерікті</th><th>Email</th><th>Тіркелген</th><th>Мәртебесі</th><th class="text-end">Қатысуды белгілеу</th></tr></thead>
+<div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table align-middle">
+  <thead><tr>
+    <th class="vp-check"><input class="form-check-input" type="checkbox" form="vp-bulk" data-select-all="vp-bulk" aria-label="{{ _('Барлығын таңдау') }}" title="{{ _('Барлығын таңдау') }}"></th>
+    <th>{{ _('Ерікті') }}</th><th>Email</th><th>{{ _('Тіркелген') }}</th><th>{{ _('Мәртебесі') }}</th><th>{{ _('Сертификат') }}</th><th class="text-end">{{ _('Қатысуды белгілеу') }}</th>
+  </tr></thead>
   <tbody>
   {% for r in regs %}
     <tr>
+      <td class="vp-check"><input class="form-check-input" type="checkbox" form="vp-bulk" name="ids" value="{{ r.id }}" data-bulk-check="vp-bulk" aria-label="{{ _('Таңдау') }}: {{ r.full_name }}"></td>
       <td class="fw-semibold">{{ r.full_name }}</td>
       <td>{{ r.email }}</td>
       <td class="text-nowrap">{{ r.registered_at[:16] | kz_datetime }}</td>
       <td>{{ m.reg_badge(r.status) }}</td>
-      <td class="text-end text-nowrap">
+      <td>{% if r.certificate_code %}<span class="badge-soft b-role"><i class="bi bi-award"></i> {{ r.certificate_code }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+      <td class="text-end"><div class="vp-actions">
         {% for value, label, cls in [('attended', 'Қатысты', 'success'), ('absent', 'Қатыспады', 'danger'), ('pending', 'Расталмаған', 'secondary')] %}
           {% if r.status != value %}
           <form method="post" class="d-inline" action="{{ url_for('registrations.set_status', registration_id=r.id) }}">
             {{ m.csrf() }}<input type="hidden" name="status" value="{{ value }}"><input type="hidden" name="event_id" value="{{ event.id }}">
-            <button class="btn btn-outline-{{ cls }} btn-sm" type="submit">{{ label }}</button>
+            <button class="btn btn-outline-{{ cls }} btn-sm" type="submit" title="{{ _(label) }}">{{ _(label) }}</button>
           </form>
           {% endif %}
         {% endfor %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
   </tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('people', 'Әзірге ешкім тіркелмеген.') }}</div>
+  <div class="vp-card">{{ m.empty('search', 'Іздеу нәтижесі жоқ. Сүзгілерді өзгертіп көріңіз.') }}</div>
+{% endif %}
+
+{% if waiting %}
+  <h2 class="h5 mt-4 mb-3"><i class="bi bi-hourglass-split me-2"></i>{{ _('Күту тізімі') }} <span class="text-muted small">{{ waiting | length }}</span></h2>
+  <div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table align-middle">
+    <thead><tr><th class="text-center">{{ _('Кезек') }}</th><th>{{ _('Ерікті') }}</th><th>Email</th><th>{{ _('Қосылған уақыты') }}</th></tr></thead>
+    <tbody>{% for w in waiting %}
+      <tr><td class="text-center"><span class="badge-soft b-role">#{{ w.position }}</span></td>
+        <td class="fw-semibold">{{ w.full_name }}</td><td>{{ w.email }}</td>
+        <td class="text-nowrap">{{ w.created_at[:16] | kz_datetime }}</td></tr>
+    {% endfor %}</tbody></table></div></div>
 {% endif %}
 {% endblock %}

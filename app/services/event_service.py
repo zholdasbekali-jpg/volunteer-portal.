@@ -3,10 +3,14 @@ from datetime import datetime
 
 from ..database import get_db, transaction
 from ..errors import NotFound, PermissionDenied, ValidationError
-from ..models import CITIES, EVENT_CANCELLED, EVENT_PUBLISHED, ROLE_ADMIN, ROLE_ORGANIZER
+from . import search_service
+from ..i18n import translate
+from ..models import (APPROVAL_APPROVED, CATEGORY_CODES, CITIES, DEFAULT_CATEGORY, EVENT_CANCELLED,
+                      EVENT_PUBLISHED, ROLE_ADMIN, ROLE_ORGANIZER, approval_of)
 
 DATE_FMT = "%Y-%m-%d %H:%M"
 MAX_CAPACITY = 10000
+MAX_HOURS = 24
 
 # Каталог пен басқару беттері үшін ортақ SELECT: бос орын саны бірден есептеледі
 _EVENT_SELECT = """
@@ -39,6 +43,9 @@ def validate_event_data(data: dict, require_future: bool) -> dict:
     city = (data.get("city") or "").strip()
     if city not in CITIES:
         raise ValidationError("Қаланы тізімнен таңдаңыз.")
+    category = (data.get("category") or DEFAULT_CATEGORY).strip()  # берілмесе — «Басқа»
+    if category not in CATEGORY_CODES:
+        raise ValidationError("Санатты тізімнен таңдаңыз.")
     if not location:
         raise ValidationError("Мекенжайы (көше, ғимарат) міндетті түрде көрсетілуі керек.")
     if len(location) > 200:
@@ -54,8 +61,16 @@ def validate_event_data(data: dict, require_future: bool) -> dict:
         raise ValidationError("Қатысушылардың ең көп саны бүтін сан болуы керек.")
     if capacity < 1 or capacity > MAX_CAPACITY:
         raise ValidationError(f"Қатысушылар саны 1 мен {MAX_CAPACITY} аралығында болуы керек.")
+    raw_hours = str(data.get("hours", "") or "").strip() or "3"
+    try:
+        hours = int(raw_hours)
+    except ValueError:
+        raise ValidationError("Ұзақтығы (сағат) бүтін сан болуы керек.")
+    if hours < 1 or hours > MAX_HOURS:
+        raise ValidationError(f"Ұзақтығы 1 мен {MAX_HOURS} сағат аралығында болуы керек.")
     return {"title": title, "description": description, "city": city, "location": location,
-            "event_date": when.strftime(DATE_FMT), "capacity": capacity}
+            "event_date": when.strftime(DATE_FMT), "capacity": capacity, "hours": hours,
+            "category": category}
 
 
 def can_manage(event, actor) -> bool:
@@ -64,7 +79,9 @@ def can_manage(event, actor) -> bool:
         return False
     if actor["role"] == ROLE_ADMIN:
         return True
-    return actor["role"] == ROLE_ORGANIZER and event["organizer_id"] == actor["id"]
+    return (actor["role"] == ROLE_ORGANIZER
+            and approval_of(actor) == APPROVAL_APPROVED
+            and event["organizer_id"] == actor["id"])
 
 
 def _load_for_manage(db, event_id, actor):
@@ -79,13 +96,17 @@ def _load_for_manage(db, event_id, actor):
 def create_event(actor, data: dict) -> int:
     if actor is None or actor["role"] not in (ROLE_ORGANIZER, ROLE_ADMIN):
         raise PermissionDenied("Іс-шараны тек ұйымдастырушы құра алады.")
+    if actor["role"] == ROLE_ORGANIZER and approval_of(actor) != APPROVAL_APPROVED:
+        raise PermissionDenied("Іс-шара құру үшін әкімшінің мақұлдауы керек.")
     clean = validate_event_data(data, require_future=True)
     with transaction() as db:
         cur = db.execute(
-            """INSERT INTO events (title, description, city, location, event_date, capacity, organizer_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT INTO events (title, description, city, location, event_date, capacity, hours,
+                                  organizer_id, category)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (clean["title"], clean["description"], clean["city"], clean["location"],
-             clean["event_date"], clean["capacity"], actor["id"]),
+             clean["event_date"], clean["capacity"], clean["hours"], actor["id"],
+             clean["category"]),
         )
         return cur.lastrowid
 
@@ -101,9 +122,10 @@ def update_event(actor, event_id: int, data: dict) -> None:
                 f"Қатысушылар санын {taken}-тен азайтуға болмайды: осынша эріктілер тіркелген.")
         db.execute(
             """UPDATE events SET title = ?, description = ?, city = ?, location = ?,
-                                 event_date = ?, capacity = ? WHERE id = ?""",
+                                 event_date = ?, capacity = ?, hours = ?, category = ?
+               WHERE id = ?""",
             (clean["title"], clean["description"], clean["city"], clean["location"],
-             clean["event_date"], clean["capacity"], event_id),
+             clean["event_date"], clean["capacity"], clean["hours"], clean["category"], event_id),
         )
 
 
@@ -140,9 +162,10 @@ def now_str() -> str:
     return datetime.now().strftime(DATE_FMT)
 
 
-def full_address(event) -> str:
-    """'Қызылорда, Орталық саябақ' — қала мен мекенжай бірге (қала жоқ ескі жазбаларда тек мекенжай)."""
-    city = event["city"] if "city" in event.keys() else ""
+def full_address(event, lang: str | None = None) -> str:
+    """'Қызылорда, Орталық саябақ' — қала мен мекенжай бірге (қала жоқ ескі жазбаларда тек мекенжай).
+    lang берілсе, қала атауы сол тілде қайтарылады (хаттар үшін)."""
+    city = translate(event["city"], lang=lang) if "city" in event.keys() else ""
     return f"{city}, {event['location']}" if city else event["location"]
 
 
@@ -150,8 +173,10 @@ def is_past(event) -> bool:
     return parse_event_date(event["event_date"]) <= datetime.now()
 
 
-def search_events(q: str = "", date: str = "", status: str = "", city: str = ""):
-    """Каталог. q — атауы/мекенжайы/қаласы бойынша іздеу; city — қала (CITIES); date — 'YYYY-MM-DD'; status:
+def search_events(q: str = "", date: str = "", status: str = "", city: str = "",
+                  category: str = ""):
+    """Каталог. q — атауы/мекенжайы/қаласы бойынша іздеу; city — қала (CITIES);
+    category — санат коды (CATEGORY_CODES); date — 'YYYY-MM-DD'; status:
     '' (жарияланғандар), 'upcoming', 'past', 'cancelled'. Тізім күні бойынша сұрыпталады."""
     now = datetime.now().strftime(DATE_FMT)
     sql = _EVENT_SELECT + " WHERE 1=1"
@@ -169,15 +194,28 @@ def search_events(q: str = "", date: str = "", status: str = "", city: str = "")
             sql += " AND e.event_date <= ?"
             params.append(now)
     q = (q or "").strip()
-    if q:
-        # LIKE арнайы таңбаларын экрандаймыз (% және _ әріп ретінде ізделеді)
-        escaped = q.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        sql += (" AND (PYLOWER(e.title) LIKE ? ESCAPE '\\' OR PYLOWER(e.location) LIKE ? ESCAPE '\\'"
-                " OR PYLOWER(e.city) LIKE ? ESCAPE '\\')")
-        params += [f"%{escaped}%"] * 3
+    parsed = search_service.parse(q) if q else None
+    if parsed:
+        for group in parsed["groups"]:
+            # әр сөз (немесе тақырып тобы) атауы/сипаттамасы/мекенжайы/қаласынан табылуы керек
+            ors = []
+            for term in group:
+                escaped = term.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+                for col in ("e.title", "e.description", "e.location", "e.city"):
+                    ors.append(f"PYLOWER({col}) LIKE ? ESCAPE '\\'")
+                    params.append(f"%{escaped}%")
+            sql += " AND (" + " OR ".join(ors) + ")"
+        if parsed["city"] and city not in CITIES:
+            city = parsed["city"]
+        if parsed["date_from"] and not (date or "").strip():
+            sql += " AND substr(e.event_date, 1, 10) BETWEEN ? AND ?"
+            params += [parsed["date_from"], parsed["date_to"]]
     if city in CITIES:  # белгісіз қала сүзгісі елеусіз қалады
         sql += " AND e.city = ?"
         params.append(city)
+    if category in CATEGORY_CODES:  # белгісіз санат сүзгісі қалаға ұқсас елеусіз қалады
+        sql += " AND e.category = ?"
+        params.append(category)
     date = (date or "").strip()
     if date:
         try:

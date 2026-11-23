@@ -40,6 +40,16 @@ class Config:
     CERTIFICATE_DIR = os.environ.get("CERTIFICATE_DIR", str(GENERATED_DIR / "certificates"))
     # QR-кодтағы тексеру сілтемесінің негізі (мыс. https://portal.example.kz). Бос болса — сұрау келген мекенжай.
     PUBLIC_URL = os.environ.get("PUBLIC_URL", "").strip()
+    # V3 хабарламалар: әдепкіде нақты SMTP-ға жібермейміз — хаттар жадындағы outbox-қа түседі.
+    # Өндірісте MAIL_ENABLED=1 + MAIL_SERVER/MAIL_PORT/... көрсету жеткілікті.
+    MAIL_ENABLED = _env_bool("MAIL_ENABLED", False)
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", "25"))
+    MAIL_USE_TLS = _env_bool("MAIL_USE_TLS", False)
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "QAMQOR <noreply@qamqor.kz>")
+    MAIL_REMINDER_DAYS = int(os.environ.get("MAIL_REMINDER_DAYS", "3"))
     CSRF_ENABLED = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

@@ -32,6 +32,9 @@ def check(email: str, ip: str, now: float | None = None) -> None:
 def record_failure(email: str, ip: str, now: float | None = None) -> None:
     now = time.time() if now is None else now
     with transaction() as db:
+        # Мерзімі өткен, бұғатталмаған жазбалар пайдасыз: кесте ойдан шығарылған email-дермен өспесін
+        db.execute("DELETE FROM login_attempts WHERE window_start < ? AND locked_until < ?",
+                   (now - WINDOW_SECONDS, now))
         for kind, key in _keys(email, ip):
             row = db.execute("SELECT fails, window_start FROM login_attempts WHERE key = ?", (key,)).fetchone()
             if row is None or now - row["window_start"] > WINDOW_SECONDS:

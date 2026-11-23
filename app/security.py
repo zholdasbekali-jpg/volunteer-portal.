@@ -21,13 +21,17 @@ def csrf_protect() -> None:
         return
     sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken", "")
     expected = session.get("_csrf_token", "")
-    if not expected or not hmac.compare_digest(sent, expected):
+    # bytes: str-та ASCII емес таңба болса compare_digest TypeError береді (500 орнына 400 керек)
+    if not expected or not hmac.compare_digest(sent.encode(), expected.encode()):
         abort(400, description="CSRF токені жарамсыз немесе мерзімі өткен. Бетті жаңартып, қайталаңыз.")
 
 
 def is_safe_next(target: str) -> bool:
     """Тек сайт ішіндегі салыстырмалы жолға қайта бағыттауға рұқсат (open redirect жоқ)."""
     if not target:
+        return False
+    # Браузер "\" белгісін "/" деп оқиды: "/\\evil.com" -> "//evil.com". Басқару таңбалары да жарамсыз.
+    if "\\" in target or any(ord(ch) < 32 or ord(ch) == 127 for ch in target):
         return False
     parsed = urlparse(target)
     return not parsed.scheme and not parsed.netloc and target.startswith("/") and not target.startswith("//")

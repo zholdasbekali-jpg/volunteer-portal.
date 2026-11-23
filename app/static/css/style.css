@@ -167,3 +167,64 @@ footer.vp-footer .handle { color: var(--vp-gold); }
   display: flex; align-items: center; justify-content: center; font-family: 'DejaVu Serif', Georgia, serif; font-size: 1.75rem; flex: none; }
 .cabinet-list > li { padding: .85rem 0; border-top: 1px solid #ece4c8; }
 .cabinet-list > li:first-child { border-top: 0; padding-top: .25rem; }
+
+/* V2: Volunteer ID, жетістіктер */
+.vid-card { border-top: 6px solid var(--vp-gold, #d0b470); }
+.vid-top { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.vid-label { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: #5d7a4a; font-weight: 600; }
+.vid-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.15rem; letter-spacing: .08em; margin: 1rem 0 .5rem; word-break: break-all; }
+.vid-qr { border-radius: 8px; border: 1px solid #e2d9bc; background: #fff; padding: 4px; max-width: 100%; height: auto; }
+.ach { display: flex; flex-direction: column; gap: .15rem; align-items: center; text-align: center; padding: 1rem .5rem; border-radius: 14px; border: 1px solid #e2d9bc; height: 100%; }
+.ach i { font-size: 1.8rem; }
+.ach span { font-size: .8rem; color: #6b7563; }
+.ach-on { background: #f4efe0; } .ach-on i { color: #2f6b1e; }
+.ach-off { opacity: .45; filter: grayscale(1); }
+
+/* Басқару панельдері: бас бөлік, сүзгі жолағы, кесте әрекеттері */
+.vp-page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.vp-page-head h1 { display: flex; align-items: center; }
+.vp-page-head h1 i { color: var(--vp-gold-dark); }
+.vp-page-head .btn { flex: none; }
+
+.vp-stat { padding-left: 3.4rem; position: relative; }
+.vp-stat-icon { position: absolute; left: 1.05rem; top: 50%; transform: translateY(-50%); font-size: 1.55rem; color: var(--vp-gold-dark); opacity: .85; }
+
+.vp-manage-tabs .nav-link { display: inline-flex; align-items: center; gap: .35rem; border: 1px solid transparent; }
+.vp-manage-tabs .nav-link.active { box-shadow: 0 3px 10px rgba(16, 51, 9, .18); }
+.vp-tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.55rem; padding: .05rem .4rem; border-radius: 99px; background: #fff; color: var(--vp-forest-2); font-size: .75rem; font-weight: 700; }
+.vp-manage-tabs .nav-link.active .vp-tab-count { background: rgba(255, 255, 255, .92); }
+
+.vp-filterbar { background: #fff; border: 1px solid var(--vp-line); border-radius: var(--vp-radius); box-shadow: var(--vp-shadow); padding: 1rem 1.15rem; }
+.vp-filterbar .form-label { margin-bottom: .3rem; font-size: .82rem; }
+.vp-result-line { color: var(--vp-muted); font-size: .85rem; margin: 0 .2rem .55rem; }
+
+.vp-manage-table th { background: #fffdf6; }
+.vp-manage-table tbody tr:hover { background: #fbf9f0; }
+.vp-manage-table td { font-size: .93rem; }
+.vp-manage-table .spots { width: 100%; margin-top: .25rem; }
+.vp-inline-form { display: flex; gap: .35rem; align-items: center; min-width: 190px; }
+.vp-inline-form .form-select { min-width: 130px; }
+.vp-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: .25rem; }
+.vp-icon-btn { width: 2.1rem; padding-left: 0; padding-right: 0; text-align: center; }
+.vp-icon-btn i { pointer-events: none; }
+
+.vp-bulkbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; background: var(--vp-gold-soft); border: 1px solid var(--vp-gold); border-radius: 14px; padding: .7rem .9rem; }
+.vp-bulk-title { font-weight: 600; color: var(--vp-forest); font-size: .9rem; }
+.vp-bulkbar .form-select { width: auto; min-width: 170px; background: #fff; }
+.vp-check { width: 2.6rem; text-align: center; }
+.vp-check .form-check-input { cursor: pointer; margin: 0; }
+
+.vp-nav .dropdown-toggle::after { margin-left: .4rem; }
+.vp-manage-menu { min-width: 250px; border-color: var(--vp-gold); }
+.vp-manage-menu .dropdown-item { display: flex; align-items: center; padding: .5rem .9rem; color: var(--vp-ink); }
+.vp-manage-menu .dropdown-item:hover, .vp-manage-menu .dropdown-item.active { background: var(--vp-leaf-soft); color: var(--vp-forest); }
+.vp-manage-menu .dropdown-item i { color: var(--vp-gold-dark); }
+
+@media (max-width: 575.98px) {
+  .vp-page-head h1 { font-size: 1.55rem; }
+  .vp-stat { padding-left: 1.1rem; }
+  .vp-stat-icon { position: static; transform: none; display: block; margin-bottom: .35rem; }
+  .vp-bulkbar .form-select { width: 100%; }
+  .vp-actions { gap: .2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .vp-manage-tabs .nav-link.active { box-shadow: none; } }

@@ -16,6 +16,7 @@
   var ctx = canvas.getContext("2d", { willReadFrequently: true });
   var stream = null, timer = null;
 
+  var T = root.dataset;  // аударылған хабарламалар шаблоннан (data-msg-*) келеді
   function say(text) { msg.textContent = text; msg.hidden = !text; }
   function go(text) { window.location.href = target + "?code=" + encodeURIComponent(String(text).slice(0, 300)); }
 
@@ -56,7 +57,7 @@
         timer = setInterval(tick, 200);
       })
       .catch(function () {
-        say("Камераға рұқсат берілмеді немесе камера табылмады. Фотоны жүктеңіз немесе нөмірді қолмен енгізіңіз.");
+        say(T.msgDenied || "");
       });
   });
   stopBtn.addEventListener("click", stop);
@@ -71,9 +72,9 @@
       var result = decode(img, img.naturalWidth, img.naturalHeight, 1600);
       URL.revokeObjectURL(url);
       if (result && result.data) go(result.data);
-      else say("Суреттен QR-код табылмады. Анығырақ, жақынырақ түсіріп көріңіз немесе нөмірді қолмен енгізіңіз.");
+      else say(T.msgNoqr || "");
     };
-    img.onerror = function () { URL.revokeObjectURL(url); say("Суретті оқу мүмкін болмады."); };
+    img.onerror = function () { URL.revokeObjectURL(url); say(T.msgReadfail || ""); };
     img.src = url;
   });
 

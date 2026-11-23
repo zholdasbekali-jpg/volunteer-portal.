@@ -108,6 +108,9 @@ def test_open_redirect_blocked():
     assert not is_safe_next("https://evil.example/x")
     assert not is_safe_next("//evil.example")
     assert not is_safe_next("")
+    # браузер "\\" белгісін "/" деп оқиды: "/\\evil.example" = "//evil.example"
+    assert not is_safe_next("/\\evil.example")
+    assert not is_safe_next("/\t/evil.example")
 
 
 def test_login_next_redirect_safe(client, make):
@@ -148,3 +151,11 @@ def test_sql_injection_attempt_is_harmless(ctx, make):
     with pytest.raises(ValidationError):
         auth_service.authenticate("' OR '1'='1", "x")
     assert get_db().execute("SELECT COUNT(*) FROM users").fetchone()[0] == 1
+
+
+def test_csrf_non_ascii_token_gives_400_not_500(app):
+    app.config["CSRF_ENABLED"] = True
+    c = app.test_client()
+    c.get("/login")  # сессияда токен пайда болады
+    r = c.post("/login", data={"email": "x@example.test", "password": PASSWORD, "csrf_token": "қате-é"})
+    assert r.status_code == 400

@@ -1,68 +1,27 @@
 # Деректер қорын жобалау
 
-СУБД: SQLite. Схема `app/database.py` ішіндегі `SCHEMA` айнымалысында. `PRAGMA foreign_keys = ON` әр қосылымда қосылады.
-
-![ER-диаграмма](er_diagram.png)
-
-(Mermaid көзі: `er_diagram.mmd`.)
+Деректер қоры — SQLite. Негізгі схема `app/database.py` файлында, ескі деректер қорының баған миграциялары сол модульде орындалады. Сыртқы кілттер қосылым сайын қосылады. Әдепкі файл: `instance/volunteer.db`; `DATABASE` арқылы өзгертуге болады.
 
 ## Кестелер
-### users
-| Өріс | Түрі | Шектеу |
-|---|---|---|
-| id | INTEGER | PK, AUTOINCREMENT |
-| full_name | TEXT | NOT NULL |
-| email | TEXT | NOT NULL, UNIQUE (кіші әріпке келтіріледі) |
-| password_hash | TEXT | NOT NULL (Werkzeug хеші) |
-| role | TEXT | CHECK ∈ {volunteer, organizer, admin} |
-| created_at | TEXT | әдепкі: жергілікті уақыт |
 
-### events
-| Өріс | Түрі | Шектеу |
-|---|---|---|
-| id | INTEGER | PK |
-| title | TEXT | NOT NULL |
-| city | TEXT | NOT NULL, әдепкі ''; мәні `app/models.py::CITIES` тізімінен (сервис тексереді) |
-| location | TEXT | NOT NULL; қаладан кейінгі мекенжай (көше, ғимарат) |
-| description | TEXT | әдепкі '' |
-| event_date | TEXT | `YYYY-MM-DD HH:MM` (мәтін ретінде салыстыруға болады) |
-| capacity | INTEGER | CHECK capacity > 0 |
-| organizer_id | INTEGER | FK → users.id, ON DELETE CASCADE |
-| status | TEXT | CHECK ∈ {published, cancelled} |
-| created_at | TEXT | |
+| Кесте | Мақсаты және маңызды шектеулері |
+|---|---|
+| `users` | Еріктілер, ұйымдастырушылар және әкімшілер; email бірегей; пароль хеш түрінде; ұйымдастырушының `approval` күйі сақталады. `lang` тіл таңдауын сақтайды. |
+| `events` | Қала, орын, санат, уақыт, сыйымдылық және жарияланған/тоқтатылған күй; ұйымдастырушыға сыртқы кілт. |
+| `registrations` | Ерікті мен іс-шара арасындағы тіркелім; `pending`, `attended`, `absent` күйлері; `(user_id, event_id)` жұбы бірегей. |
+| `certificates` | Қатысқан тіркелімге берілген PDF жолы және бірегей сертификат коды; тіркелімге ең көбі бір сертификат. |
+| `login_attempts` | Кіру әрекеттерін уақыт терезесі және бұғаттау уақыты бойынша шектеу. |
+| `waitlist` | Сыйымдылық толған іс-шараға кезек; ерікті/іс-шара жұбы бірегей, ұсыныс FIFO ретімен жасалады. |
+| `favorites` | Еріктінің таңдаулы іс-шаралары; `(user_id, event_id)` — бастапқы кілт. |
+| `reviews` | Өткен іс-шараға қатысқан еріктінің бағасы мен пікірі; рейтинг 1–5, іс-шара/ерікті жұбы бірегей. |
+| `audit_log` | Әкімші әрекетінің түрі, нысаны, мәліметтері және уақыты; пайдаланушы өшсе `actor_id` NULL болады. |
 
-### registrations
-| Өріс | Түрі | Шектеу |
-|---|---|---|
-| id | INTEGER | PK |
-| user_id | INTEGER | FK → users.id, CASCADE |
-| event_id | INTEGER | FK → events.id, CASCADE |
-| status | TEXT | CHECK ∈ {pending (Расталмаған), attended (Қатысты), absent (Қатыспады)} |
-| registered_at | TEXT | |
-| | | **UNIQUE(user_id, event_id)** |
+## Миграциялар мен шектеулер
 
-### certificates
-| Өріс | Түрі | Шектеу |
-|---|---|---|
-| id | INTEGER | PK |
-| registration_id | INTEGER | FK → registrations.id, CASCADE, UNIQUE |
-| certificate_code | TEXT | UNIQUE |
-| issued_at | TEXT | |
-| pdf_path | TEXT | NOT NULL |
+`init_db()` жоқ бағандарды `ALTER TABLE` арқылы қосады. Бұрыннан бар пайдаланушыларға мақұлдау күйі әдепкіде `approved`, ал бұрынғы санатсыз іс-шараларға `other` беріледі. Қайта іске қосуға қауіпсіз миграция логикасы бағанды бар-жоғын тексеріп барып қосады.
 
-## Байланыстар
-- users 1—N events (ұйымдастырушы).
-- users 1—N registrations; events 1—N registrations (users мен events арасындағы N—M байланысы).
-- registrations 1—0..1 certificates.
+Тіркелген адам санын тексеру мен жаңа тіркелімді жазу бір `BEGIN IMMEDIATE` транзакциясында орындалады. Сыртқы кілттер мен UNIQUE шектеулері деректердің байланысын қорғайды. Негізгі индекстер іс-шара күні/ұйымдастырушысы, күту тізімі, пікірлер, таңдаулылар және аудит журналы үшін жасалады.
 
-## Индекстер
-`events(event_date)`, `events(organizer_id)`, `events(city)`, `registrations(event_id)`.
+Қолданба дерекқорын резервке алғанда PDF файлдары да керек: сертификат кестесі файл жолын сақтайды, PDF мазмұнын дерекқор ішінде сақтамайды.
 
-## Миграция
-`city` бағаны кейін қосылды. `init_db()` ескі қорда бағанның жоқтығын `PRAGMA table_info` арқылы анықтап, `ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT ''` орындайды; бар деректер сақталады (тест: `test_old_database_without_city_is_migrated`). Қаласы жоқ ескі іс-шаралар тек мекенжаймен көрсетіледі, өңдегенде қаланы таңдау талап етіледі.
-
-## Тұтастық пен транзакциялар
-- Қайталанатын тіркелуден UNIQUE шектеуі қорғайды (сервис алдын ала тексереді, DB соңғы қорғаныс).
-- Тіркелу `BEGIN IMMEDIATE` транзакциясында: жазу құлпы алынғаннан кейін орын саны есептеліп, INSERT жасалады. 5 ағынды тест (`test_concurrent_registration_never_exceeds_capacity`) нақты 2 орынға 2 сәтті тіркеуді көрсетті.
-- Іс-шара/пайдаланушы жойылғанда байланысты тіркелімдер мен сертификат жазбалары CASCADE арқылы жойылады, PDF файлдары сервис қайтарған жолдар бойынша өшіріледі.
-- SQLite-тың `LOWER()` кириллицаны төмендетпейді; сондықтан `PYLOWER` функциясы тіркелген (іздеу тесті мұны ашты).
+ER-диаграмма `er_diagram.png` және `er_diagram.mmd` файлдарында берілген.

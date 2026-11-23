@@ -1,13 +1,14 @@
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
 
-{% macro event_badge(status) %}<span class="badge-soft b-{{ status }}">{{ EVENT_STATUS_LABELS.get(status, status) }}</span>{% endmacro %}
-{% macro reg_badge(status) %}<span class="badge-soft b-{{ status }}">{{ REG_STATUS_LABELS.get(status, status) }}</span>{% endmacro %}
+{% macro event_badge(status) %}<span class="badge-soft b-{{ status }}">{{ _(EVENT_STATUS_LABELS.get(status, status)) }}</span>{% endmacro %}
+{% macro category_badge(code) %}<span class="badge-soft b-role"><i class="bi bi-tag"></i> {{ _(CATEGORY_LABELS.get(code, code)) }}</span>{% endmacro %}
+{% macro reg_badge(status) %}<span class="badge-soft b-{{ status }}">{{ _(REG_STATUS_LABELS.get(status, status)) }}</span>{% endmacro %}
 
 {% macro spots_bar(e) %}
   {% set free = e.capacity - e.registered_count %}
   {% set pct = (e.registered_count * 100 / e.capacity) | round | int %}
   <div class="d-flex justify-content-between small mb-1">
-    <span class="text-muted">Бос орын</span>
+    <span class="text-muted">{{ _('Бос орын') }}</span>
     <b>{{ free if free > 0 else 0 }} / {{ e.capacity }}</b>
   </div>
   <div class="spots {{ 'full' if free <= 0 }}"><span style="width: {{ [pct, 100] | min }}%"></span></div>
@@ -22,8 +23,8 @@
         <div class="flex-grow-1">
           <h3 class="h6 mb-1"><a class="stretched-link-title stretched-link" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a></h3>
           <div class="d-flex flex-wrap gap-1">
-            {{ event_badge(e.status) }}
-            {% if past and e.status == 'published' %}<span class="badge-soft b-past">Өтті</span>{% endif %}
+            {{ event_badge(e.status) }}{{ category_badge(e.category) }}
+            {% if past and e.status == 'published' %}<span class="badge-soft b-past">{{ _('Өтті') }}</span>{% endif %}
           </div>
         </div>
       </div>
@@ -35,7 +36,7 @@
 {% endmacro %}
 
 {% macro empty(icon, text) %}
-  <div class="empty"><i class="bi bi-{{ icon }}"></i>{{ text }}</div>
+  <div class="empty"><i class="bi bi-{{ icon }}"></i>{{ _(text) }}</div>
 {% endmacro %}
 
 {% macro field_error_note() %}{% endmacro %}

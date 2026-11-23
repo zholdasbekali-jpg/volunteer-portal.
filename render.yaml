@@ -15,3 +15,7 @@ services:
         value: "1"
       - key: SESSION_COOKIE_SECURE
         value: "1"
+      # Қосымша уақытты datetime.now() арқылы алады; Render-де әдепкі UTC (Қазақстаннан 5 сағат кем).
+      # Осыныз іс-шараға тіркелу, QR-белгілеу терезесі мен "өтті" мәртебесі қате уақытта ауысады.
+      - key: TZ
+        value: Asia/Almaty

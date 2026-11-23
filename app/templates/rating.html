@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Рейтинг') }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0"><i class="bi bi-trophy"></i> {{ _('Рейтинг') }}</h1>
+  <div class="btn-group" role="group" aria-label="{{ _('Кезең') }}">
+    {% for value, label in periods %}
+      <a class="btn btn-sm {{ 'btn-primary' if value == period else 'btn-outline-primary' }}" href="{{ url_for('volunteers.rating', period=value) }}">{{ _(label) }}</a>
+    {% endfor %}
+  </div>
+</div>
+<p class="text-muted">{{ _('Қатысуы расталған іс-шаралар бойынша. Ерікті өз профилін жасырса, аты көрсетілмейді.') }}</p>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="vp-card vp-card-pad h-100"><h2 class="h5">{{ _('Үздік еріктілер') }}</h2>
+    {% if volunteers %}
+      <div class="table-responsive"><table class="table vp-table align-middle mb-0">
+        <thead><tr><th>#</th><th>{{ _('Ерікті') }}</th><th class="text-end">{{ _('Сағат') }}</th><th class="text-end">{{ _('Іс-шара') }}</th></tr></thead>
+        <tbody>{% for v in volunteers %}<tr>
+          <td>{{ v.place }}</td>
+          <td>{% if v.code %}<a href="{{ url_for('volunteers.public_card', code=v.code) }}">{{ _(v.name) }}</a>{% else %}<span class="text-muted">{{ _(v.name) }}</span>{% endif %}</td>
+          <td class="text-end">{{ v.hours }}</td><td class="text-end">{{ v.events }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="text-muted mb-0">{{ _('Әзірге деректер жоқ.') }}</p>{% endif %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="vp-card vp-card-pad mb-4"><h2 class="h5">{{ _('Үздік ұйымдастырушылар') }}</h2>
+    {% if organizers %}
+      <div class="table-responsive"><table class="table vp-table align-middle mb-0">
+        <thead><tr><th>#</th><th>{{ _('Ұйымдастырушы') }}</th><th class="text-end">{{ _('Қатысушы') }}</th><th class="text-end">{{ _('Іс-шара') }}</th></tr></thead>
+        <tbody>{% for o in organizers %}<tr><td>{{ o.place }}</td><td>{{ o.name }}</td><td class="text-end">{{ o.attended }}</td><td class="text-end">{{ o.events }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="text-muted mb-0">{{ _('Әзірге деректер жоқ.') }}</p>{% endif %}
+    </div>
+    <div class="vp-card vp-card-pad"><h2 class="h5">{{ _('Белсенді қалалар') }}</h2>
+    {% if cities %}
+      <div class="table-responsive"><table class="table vp-table align-middle mb-0">
+        <thead><tr><th>#</th><th>{{ _('Қала') }}</th><th class="text-end">{{ _('Қатысушы') }}</th><th class="text-end">{{ _('Іс-шара') }}</th></tr></thead>
+        <tbody>{% for c in cities %}<tr><td>{{ c.place }}</td><td>{{ _(c.city) }}</td><td class="text-end">{{ c.attended }}</td><td class="text-end">{{ c.events }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="text-muted mb-0">{{ _('Әзірге деректер жоқ.') }}</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

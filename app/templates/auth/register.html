@@ -1,40 +1,40 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Тіркелу{% endblock %}
+{% block title %}{{ _('Тіркелу') }}{% endblock %}
 {% block content %}
 <div class="auth-wrap">
   <div class="vp-card auth-card">
     <div class="auth-banner"><img src="{{ static_url('images/logo.png') }}" alt="QAMQOR"></div>
     <div class="auth-body">
-    <h1 class="h3 mb-1">Тіркелу</h1>
-    <p class="text-muted mb-4">Жаңа аккаунт жасаңыз</p>
+    <h1 class="h3 mb-1">{{ _('Тіркелу') }}</h1>
+    <p class="text-muted mb-4">{{ _('Жаңа аккаунт жасаңыз') }}</p>
     <form method="post" class="needs-validation" novalidate>
       {{ m.csrf() }}
       <div class="mb-3">
-        <label class="form-label" for="full_name">Аты-жөні</label>
+        <label class="form-label" for="full_name">{{ _('Аты-жөні') }}</label>
         <input class="form-control" id="full_name" name="full_name" required minlength="2" maxlength="120" value="{{ form.get('full_name', '') }}">
-        <div class="invalid-feedback">Аты-жөніңізді енгізіңіз (кемінде 2 таңба).</div>
+        <div class="invalid-feedback">{{ _('Аты-жөніңізді енгізіңіз (кемінде 2 таңба).') }}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="email">Электрондық пошта</label>
+        <label class="form-label" for="email">{{ _('Электрондық пошта') }}</label>
         <input class="form-control" id="email" name="email" type="email" required autocomplete="email" value="{{ form.get('email', '') }}">
-        <div class="invalid-feedback">Дұрыс email енгізіңіз.</div>
+        <div class="invalid-feedback">{{ _('Дұрыс email енгізіңіз.') }}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="password">Құпиясөз</label>
+        <label class="form-label" for="password">{{ _('Құпиясөз') }}</label>
         <input class="form-control" id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
-        <div class="form-text">Кемінде 8 таңба, әріп және цифр болуы керек.</div>
-        <div class="invalid-feedback">Құпиясөз кемінде 8 таңба болуы керек.</div>
+        <div class="form-text">{{ _('Кемінде 8 таңба, әріп және цифр болуы керек.') }}</div>
+        <div class="invalid-feedback">{{ _('Құпиясөз кемінде 8 таңба болуы керек.') }}</div>
       </div>
       <div class="mb-4">
-        <label class="form-label" for="role">Мен —</label>
+        <label class="form-label" for="role">{{ _('Мен —') }}</label>
         <select class="form-select" id="role" name="role">
-          {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if form.get('role') == value }}>{{ label }}</option>{% endfor %}
+          {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if form.get('role') == value }}>{{ _(label) }}</option>{% endfor %}
         </select>
       </div>
-      <button class="btn btn-primary w-100" type="submit" data-loading="Тіркелуде…">Тіркелу</button>
+      <button class="btn btn-primary w-100" type="submit" data-loading="{{ _('Тіркелуде…') }}">{{ _('Тіркелу') }}</button>
     </form>
-    <p class="text-center text-muted mt-3 mb-0">Аккаунт бар ма? <a href="{{ url_for('auth.login') }}">Кіру</a></p>
+    <p class="text-center text-muted mt-3 mb-0">{{ _('Аккаунт бар ма?') }} <a href="{{ url_for('auth.login') }}">{{ _('Кіру') }}</a></p>
     </div>
   </div>
 </div>

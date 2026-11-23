@@ -171,3 +171,18 @@ def test_huge_ids_give_404_not_500(client, make, path):
 
 def test_largest_valid_id_still_routes(client, make):
     assert client.get("/events/9223372036854775807").status_code == 404   # сан дұрыс, жазба жоқ
+
+
+def test_throttle_drops_expired_rows(ctx):
+    from app.database import get_db
+    th.record_failure("old@example.test", "1.1.1.1", now=1000.0)
+    later = 1000.0 + th.WINDOW_SECONDS + 10
+    th.record_failure("new@example.test", "2.2.2.2", now=later)
+    keys = {r["key"] for r in get_db().execute("SELECT key FROM login_attempts")}
+    assert "e:old@example.test" not in keys and "e:new@example.test" in keys
+
+
+def test_init_db_is_safe_to_repeat(ctx):
+    from app import database
+    database.init_db()
+    database.init_db()  # екінші worker сияқты: қайта іске қосу қате бермейді

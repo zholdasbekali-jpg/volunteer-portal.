@@ -28,6 +28,9 @@
 | 11 | Жеке кабинет (ерікті) | `/cabinet/` | ![](screenshots/19_cabinet_volunteer.png) |
 | 11б | Жеке кабинет (ұйымдастырушы) | `/cabinet/` | ![](screenshots/20_cabinet_organizer.png) |
 | 11в | Жеке кабинет (әкімші) | `/cabinet/` | ![](screenshots/21_cabinet_admin.png) |
+| 12 | Volunteer ID | `/cabinet/id` | ![](screenshots/23_volunteer_id.png) |
+| 13 | Рейтинг | `/rating` | ![](screenshots/24_rating.png) |
+| 14 | Ақылды іздеу (телефон) | `/events?q=…` | ![](screenshots/25_smart_search_phone.png) |
 | 11г | Жеке кабинет (телефон) | `/cabinet/` | ![](screenshots/22_cabinet_phone.png) |
 
 Күйлер: бос деректер (мысалы, «Әзірге ешкім тіркелмеген»), қате/ескерту хабарламалары (flash), батырмадағы жүктелу индикаторы (`data-loading`), графиктердің жүктелу/қате күйі, 403/404/500 беттері.

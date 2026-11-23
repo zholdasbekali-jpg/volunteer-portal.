@@ -38,7 +38,8 @@
     img.addEventListener("load", function () { box.classList.remove("loading"); });
     img.addEventListener("error", function () {
       box.classList.remove("loading");
-      box.innerHTML = '<div class="empty"><i class="bi bi-exclamation-triangle"></i>График жүктелмеді. Бетті жаңартып көріңіз.</div>';
+      box.innerHTML = '<div class="empty"><i class="bi bi-exclamation-triangle"></i></div>';
+      box.firstChild.appendChild(document.createTextNode(document.body.dataset.chartError || ""));
     });
   });
 
@@ -47,5 +48,46 @@
     setTimeout(function () {
       if (window.bootstrap) bootstrap.Alert.getOrCreateInstance(el).close();
     }, 6000);
+  });
+
+  // Басқару беттеріндегі бөлімдер: сілтеме (%23users т.с.с.) арқылы ашылады
+  var tabs = document.querySelectorAll('[data-bs-toggle="pill"], [data-bs-toggle="tab"]');
+  if (window.bootstrap && tabs.length) {
+    var hash = window.location.hash.replace("#", "");
+    if (hash) {
+      Array.prototype.forEach.call(tabs, function (tab) {
+        if (tab.getAttribute("data-bs-target") === "#" + hash) {
+          bootstrap.Tab.getOrCreateInstance(tab).show();
+        }
+      });
+    }
+    Array.prototype.forEach.call(tabs, function (tab) {
+      tab.addEventListener("shown.bs.tab", function () {
+        var target = tab.getAttribute("data-bs-target");
+        if (window.history.replaceState) window.history.replaceState(null, "", target);
+        else window.location.hash = target;
+      });
+    });
+  }
+
+  // Қатысушылар кестесіндегі жаппай таңдау мен «Қолдану» түймесі.
+  // Чекбокстар кестеде, ал форма оның сыртында: form="..." атрибуты арқылы байланысады.
+  document.querySelectorAll("[data-select-all]").forEach(function (master) {
+    var formId = master.dataset.selectAll;
+    var form = document.getElementById(formId);
+    if (!form) return;
+    var boxes = document.querySelectorAll('input[type="checkbox"][name="ids"][form="' + formId + '"]');
+    var apply = form.querySelector("[data-bulk-apply]");
+    var sync = function () {
+      if (apply) {
+        apply.disabled = !Array.prototype.some.call(boxes, function (box) { return box.checked; });
+      }
+    };
+    master.addEventListener("change", function () {
+      Array.prototype.forEach.call(boxes, function (box) { box.checked = master.checked; });
+      sync();
+    });
+    Array.prototype.forEach.call(boxes, function (box) { box.addEventListener("change", sync); });
+    sync();
   });
 })();

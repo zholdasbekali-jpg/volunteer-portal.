@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ _('Ұйымдастырушыны мақұлдау') }}{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="vp-card auth-card"><div class="auth-body text-center py-5">
+  <i class="bi bi-hourglass-split fs-1 text-primary mb-3"></i>
+  <h1 class="h4 mb-3">{{ _('Ұйымдастырушы ретінде мақұлдануды күтудесіз.') }}</h1>
+  {% if approval == 'rejected' %}
+    <p class="text-muted">{{ _('Өкінішке орай, тіркелуіңіз қабылданбады. Әкімшімен байланысыңыз.') }}</p>
+  {% else %}
+    <p class="text-muted">{{ _('Сіз жүйеге кірдіңіз. Іс-шара құру үшін әкімшінің мақұлдауы керек. Мақұлданған соң email арқылы хабарлаймыз.') }}</p>
+  {% endif %}
+  <a class="btn btn-outline-primary mt-3" href="{{ url_for('events.catalog') }}">{{ _('Іс-шаралар каталогы') }}</a>
+</div></div></div>
+{% endblock %}

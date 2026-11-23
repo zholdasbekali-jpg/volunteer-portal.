@@ -8,10 +8,10 @@ from werkzeug.routing import IntegerConverter
 
 from config import Config
 
-from . import database
-from .models import (EVENT_STATUS_LABELS, REG_STATUS_LABELS, ROLE_LABELS, User)
+from . import database, i18n
+from .models import (CATEGORY_LABELS, EVENT_STATUS_LABELS, REG_STATUS_LABELS, ROLE_LABELS, User)
 from .security import csrf_protect, get_csrf_token
-from .services import auth_service, certificate_service, event_service
+from .services import auth_service, certificate_service, event_service, mail_service
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -22,12 +22,8 @@ KZ_MONTHS = certificate_service.KZ_MONTHS
 
 
 def kz_datetime(value: str, with_time: bool = True) -> str:
-    """'2026-05-01 10:00' -> '1 мамыр 2026, 10:00'."""
-    if not value:
-        return ""
-    y, m, d = int(value[:4]), int(value[5:7]), int(value[8:10])
-    text = f"{d} {KZ_MONTHS[m - 1]} {y}"
-    return f"{text}, {value[11:16]}" if with_time and len(value) >= 16 else text
+    """'2026-05-01 10:00' -> '1 мамыр 2026, 10:00' (ағымдағы тілде: орысша «1 мая 2026», ағылшынша «1 May 2026»)."""
+    return i18n.format_date(value, with_time)
 
 
 class SafeIntConverter(IntegerConverter):
@@ -51,6 +47,7 @@ def create_app(config_object=None, **overrides) -> Flask:
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     login_manager.init_app(app)
+    mail_service.init_app(app)
     app.teardown_appcontext(database.close_db)
     app.before_request(csrf_protect)
 
@@ -68,16 +65,20 @@ def create_app(config_object=None, **overrides) -> Flask:
     def inject_static_url():
         return {"static_url": lambda name: url_for("static", filename=name, v=asset_version)}
 
+    app.jinja_env.globals["_"] = i18n.translate
+    app.context_processor(i18n.context)
     app.jinja_env.globals["csrf_token"] = get_csrf_token
     app.jinja_env.globals["now_str"] = event_service.now_str
     app.jinja_env.filters["full_address"] = event_service.full_address
     app.jinja_env.filters["kz_datetime"] = kz_datetime
     app.jinja_env.filters["kz_date"] = lambda v: kz_datetime(v, with_time=False)
-    app.jinja_env.globals.update(ROLE_LABELS=ROLE_LABELS, EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,
+    app.jinja_env.globals.update(CATEGORY_LABELS=CATEGORY_LABELS, ROLE_LABELS=ROLE_LABELS,
+                                 EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,
                                  REG_STATUS_LABELS=REG_STATUS_LABELS)
 
-    from . import admin, auth, cabinet, certificates, checkin, events, registrations, statistics
-    for module in (auth, events, registrations, certificates, checkin, cabinet, statistics, admin):
+    from . import (admin, auth, cabinet, certificates, checkin, events, registrations, statistics,
+                   volunteers)
+    for module in (auth, events, registrations, certificates, checkin, cabinet, volunteers, statistics, admin, i18n):
         app.register_blueprint(module.bp)
 
     register_error_handlers(app)
@@ -135,6 +136,13 @@ def register_cli(app: Flask) -> None:
         """Деректер қорын (кестелерді) құру."""
         database.init_db()
         click.echo("Деректер қоры дайын.")
+
+    @app.cli.command("notify-upcoming")
+    @click.option("--days", type=int, default=None,
+                  help="Хабарлама қанша күн бұрын жіберіледі (әдепкі — MAIL_REMINDER_DAYS).")
+    def notify_upcoming_command(days):
+        """Жақында өтетін іс-шараларға тіркелген еріктілерге хат жіберу."""
+        click.echo(f"Жіберілген хаттар саны: {mail_service.send_upcoming_reminders(days)}")
 
     @app.cli.command("seed-demo")
     def seed_demo_command():

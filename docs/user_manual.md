@@ -1,6 +1,6 @@
 # Пайдаланушы нұсқаулығы
 
-Демо-аккаунттар (`flask --app run seed-demo` арқылы жүктелгенде): әкімші `admin@volunteer.kz` / `Demo12345`; ұйымдастырушы `aigul@volunteer.kz` / `Demo12345`; ерікті `volunteer1@volunteer.kz` / `Demo12345`. Бұл тек көрсету үшін.
+Демо-аккаунттар (`flask --app run seed-demo` арқылы жүктелгенде): әкімші `admin@volunteer.kz` / `Admin12345`; ұйымдастырушы `aigul@volunteer.kz` / `Demo12345`; ерікті `volunteer1@volunteer.kz` / `Demo12345`. Бұл тек көрсету үшін.
 
 ## Ерікті
 1. **Тіркелу**: «Тіркелу» → аты-жөні, email, пароль (кемінде 8 таңба, әріп + цифр), рөл «Ерікті» → «Тіркелу». Содан кейін «Кіру».

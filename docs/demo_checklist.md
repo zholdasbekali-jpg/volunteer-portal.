@@ -11,7 +11,7 @@
 ## Демо-аккаунттар
 | Рөл | Email | Құпиясөз |
 |---|---|---|
-| Әкімші | admin@volunteer.kz | Demo12345 |
+| Әкімші | admin@volunteer.kz | Admin12345 |
 | Ұйымдастырушы | aigul@volunteer.kz | Demo12345 |
 | Ерікті | volunteer1@volunteer.kz | Demo12345 |
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Сертификатты тексеру{% endblock %}
+{% block title %}{{ _('Сертификатты тексеру') }}{% endblock %}
 {% block content %}
 <div class="auth-wrap">
   <div class="vp-card auth-card text-center">
@@ -7,16 +7,16 @@
     <div class="auth-body">
     {% if cert %}
       <i class="bi bi-patch-check-fill text-success" style="font-size:3rem"></i>
-      <h1 class="h4 mt-2">Сертификат түпнұсқа</h1>
+      <h1 class="h4 mt-2">{{ _('Сертификат түпнұсқа') }}</h1>
       <p class="mb-1"><b>{{ cert.full_name }}</b></p>
       <p class="text-muted mb-1">«{{ cert.title }}» · {{ cert.event_date | kz_date }}</p>
-      <p class="small text-muted mb-0">№ {{ cert.certificate_code }} · берілген: {{ cert.issued_at | kz_date }}</p>
+      <p class="small text-muted mb-0">№ {{ cert.certificate_code }} {{ _('· берілген:') }} {{ cert.issued_at | kz_date }}</p>
     {% else %}
       <i class="bi bi-x-octagon-fill text-danger" style="font-size:3rem"></i>
-      <h1 class="h4 mt-2">Сертификат табылмады</h1>
-      <p class="text-muted mb-0">№ {{ code }} нөмірлі сертификат жүйеде жоқ.</p>
+      <h1 class="h4 mt-2">{{ _('Сертификат табылмады') }}</h1>
+      <p class="text-muted mb-0">№ {{ code }} {{ _('нөмірлі сертификат жүйеде жоқ.') }}</p>
     {% endif %}
-    <a class="btn btn-outline-primary mt-3" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Басқа сертификатты тексеру</a>
+    <a class="btn btn-outline-primary mt-3" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> {{ _('Басқа сертификатты тексеру') }}</a>
     </div>
   </div>
 </div>

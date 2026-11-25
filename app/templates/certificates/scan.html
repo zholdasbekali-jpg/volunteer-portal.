@@ -1,33 +1,33 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Сертификатты тексеру{% endblock %}
+{% block title %}{{ _('Сертификатты тексеру') }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-7 col-xl-6">
-  <h1 class="h3 mb-1">Сертификатты тексеру</h1>
-  <p class="text-muted mb-4">Сертификаттағы QR-кодты сканерлеңіз немесе нөмірін енгізіңіз: жүйе түпнұсқалығын тексереді. Іс-шарада ұйымдастырушы көрсеткен «қатысуды белгілеу» QR-ын да осы жерден сканерлеуге болады (алдымен сайтқа кіріңіз).</p>
+  <h1 class="h3 mb-1">{{ _('Сертификатты тексеру') }}</h1>
+  <p class="text-muted mb-4">{{ _('Сертификаттағы QR-кодты сканерлеңіз немесе нөмірін енгізіңіз: жүйе түпнұсқалығын тексереді. Іс-шарада ұйымдастырушы көрсеткен «қатысуды белгілеу» QR-ын да осы жерден сканерлеуге болады (алдымен сайтқа кіріңіз).') }}</p>
 
   <div class="vp-card vp-card-pad mb-3" id="scanner" data-url="{{ url_for('certificates.scan') }}">
-    <h2 class="h6 mb-3"><i class="bi bi-camera"></i> 1. Камера арқылы</h2>
+    <h2 class="h6 mb-3"><i class="bi bi-camera"></i> {{ _('1. Камера арқылы') }}</h2>
     <video id="scan-video" class="scan-video mb-3" playsinline muted hidden></video>
     <div class="d-flex flex-wrap gap-2">
-      <button type="button" class="btn btn-primary" id="scan-start"><i class="bi bi-qr-code-scan"></i> Камераны қосу</button>
-      <button type="button" class="btn btn-outline-secondary" id="scan-stop" hidden>Тоқтату</button>
+      <button type="button" class="btn btn-primary" id="scan-start"><i class="bi bi-qr-code-scan"></i> {{ _('Камераны қосу') }}</button>
+      <button type="button" class="btn btn-outline-secondary" id="scan-stop" hidden>{{ _('Тоқтату') }}</button>
     </div>
-    <div class="form-text mt-2" id="scan-cam-note" hidden>Камера тек HTTPS немесе localhost арқылы ашылған бетте жұмыс істейді. Төмендегі фото немесе нөмір әдісін қолданыңыз.</div>
+    <div class="form-text mt-2" id="scan-cam-note" hidden>{{ _('Камера тек HTTPS немесе localhost арқылы ашылған бетте жұмыс істейді. Төмендегі фото немесе нөмір әдісін қолданыңыз.') }}</div>
     <div class="alert alert-warning mt-3 mb-0" id="scan-msg" role="alert" hidden></div>
   </div>
 
   <div class="vp-card vp-card-pad mb-3">
-    <h2 class="h6 mb-3"><i class="bi bi-image"></i> 2. QR-дың фотосы немесе скриншоты</h2>
-    <input class="form-control" type="file" id="scan-file" accept="image/*" aria-label="QR суреті">
-    <div class="form-text">Телефонда «Фото түсіру» таңдауға болады.</div>
+    <h2 class="h6 mb-3"><i class="bi bi-image"></i> {{ _('2. QR-дың фотосы немесе скриншоты') }}</h2>
+    <input class="form-control" type="file" id="scan-file" accept="image/*" aria-label="{{ _('QR суреті') }}">
+    <div class="form-text">{{ _('Телефонда «Фото түсіру» таңдауға болады.') }}</div>
   </div>
 
   <div class="vp-card vp-card-pad">
-    <h2 class="h6 mb-3"><i class="bi bi-keyboard"></i> 3. Нөмірін қолмен енгізу</h2>
+    <h2 class="h6 mb-3"><i class="bi bi-keyboard"></i> {{ _('3. Нөмірін қолмен енгізу') }}</h2>
     <form method="get" action="{{ url_for('certificates.scan') }}" class="d-flex gap-2">
-      <input class="form-control" name="code" placeholder="VP-2026-1A2B3C4D" required maxlength="300" aria-label="Сертификат нөмірі">
-      <button class="btn btn-primary" type="submit">Тексеру</button>
+      <input class="form-control" name="code" placeholder="VP-2026-1A2B3C4D" required maxlength="300" aria-label="{{ _('Сертификат нөмірі') }}">
+      <button class="btn btn-primary" type="submit">{{ _('Тексеру') }}</button>
     </form>
   </div>
 </div></div>

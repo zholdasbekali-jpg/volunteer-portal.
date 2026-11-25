@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Қатысуды растау{% endblock %}
+{% block title %}{{ _('Қатысуды растау') }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center"><div class="col-md-8 col-lg-6">
   <div class="vp-card vp-card-pad text-center">
   {% if error %}
-    <h1 class="h4">Белгілеу мүмкін емес</h1>
+    <h1 class="h4">{{ _('Белгілеу мүмкін емес') }}</h1>
     <div class="alert alert-danger mt-3">{{ error }}</div>
-    <a class="btn btn-primary" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Қайта сканерлеу</a>
+    <a class="btn btn-primary" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> {{ _('Қайта сканерлеу') }}</a>
   {% else %}
-    <h1 class="h4 mb-1">Қатысуыңызды растаңыз</h1>
+    <h1 class="h4 mb-1">{{ _('Қатысуыңызды растаңыз') }}</h1>
     <p class="text-muted">{{ event.title }} · {{ event.event_date | kz_datetime }}</p>
     <form method="post" action="{{ url_for('checkin.confirm', token=token) }}">
       {{ m.csrf() }}
-      <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check2-circle"></i> Мен осындамын</button>
+      <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check2-circle"></i> {{ _('Мен осындамын') }}</button>
     </form>
-    <div class="small text-muted mt-3">QR тек іс-шарада тұрған ұйымдастырушы экранында көрсетіледі және тез ескіреді.</div>
+    <div class="small text-muted mt-3">{{ _('QR тек іс-шарада тұрған ұйымдастырушы экранында көрсетіледі және тез ескіреді.') }}</div>
   {% endif %}
   </div>
 </div></div>

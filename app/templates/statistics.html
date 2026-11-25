@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Статистика{% endblock %}
+{% block title %}{{ _('Статистика') }}{% endblock %}
 {% block content %}
-<h1 class="h3 mb-1">Статистика</h1>
-<p class="text-muted mb-4">{{ 'Бүкіл платформа бойынша' if current_user.is_admin else 'Сіздің іс-шараларыңыз бойынша' }} · деректер қорынан нақты уақытта есептеледі</p>
+<h1 class="h3 mb-1">{{ _('Статистика') }}</h1>
+<p class="text-muted mb-4">{{ _('Бүкіл платформа бойынша') if current_user.is_admin else _('Сіздің іс-шараларыңыз бойынша') }} {{ _('· деректер қорынан нақты уақытта есептеледі') }}</p>
 <div class="row g-3 mb-4">
-  {% for value, label in [(summary.events_total, 'Іс-шаралар саны'), (summary.volunteers_total, 'Эріктілер саны'), (summary.registrations_total, 'Тіркелімдер саны'), (summary.attended_total, 'Қатысуы расталған'), (summary.fill_rate ~ '%', 'Толу көрсеткіші')] %}
+  {% for value, label in [(summary.events_total, _('Іс-шаралар саны')), (summary.volunteers_total, _('Эріктілер саны')), (summary.registrations_total, _('Тіркелімдер саны')), (summary.attended_total, _('Қатысуы расталған')), (summary.fill_rate ~ '%', _('Толу көрсеткіші'))] %}
     <div class="col-6 col-md-4 col-xl"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
   {% endfor %}
 </div>
 <div class="row g-3 mb-4">
-  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="Жалпы көрсеткіштер диаграммасы" src="{{ url_for('statistics.chart', name='summary') }}"></div></div>
-  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="Толу көрсеткіші диаграммасы" src="{{ url_for('statistics.chart', name='fill') }}"></div></div>
-  <div class="col-12"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="Іс-шаралар бойынша қатысушылар салыстыруы" src="{{ url_for('statistics.chart', name='events') }}"></div></div>
+  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Жалпы көрсеткіштер диаграммасы') }}" src="{{ url_for('statistics.chart', name='summary') }}"></div></div>
+  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Толу көрсеткіші диаграммасы') }}" src="{{ url_for('statistics.chart', name='fill') }}"></div></div>
+  <div class="col-12"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Іс-шаралар бойынша қатысушылар салыстыруы') }}" src="{{ url_for('statistics.chart', name='events') }}"></div></div>
 </div>
-<h2 class="h5 mb-3">Іс-шаралар бойынша кесте</h2>
+<h2 class="h5 mb-3">{{ _('Іс-шаралар бойынша кесте') }}</h2>
 {% if stats %}
 <div class="vp-card"><div class="table-responsive"><table class="table vp-table">
-  <thead><tr><th>Іс-шара</th><th>Күні</th><th>Сыйымдылық</th><th>Тіркелген</th><th>Қатысты</th><th>Толу</th></tr></thead>
+  <thead><tr><th>{{ _('Іс-шара') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Сыйымдылық') }}</th><th>{{ _('Тіркелген') }}</th><th>{{ _('Қатысты') }}</th><th>{{ _('Толу') }}</th></tr></thead>
   <tbody>{% for s in stats %}
     <tr><td class="fw-semibold">{{ s.title }}</td><td class="text-nowrap">{{ s.event_date | kz_date }}</td><td>{{ s.capacity }}</td><td>{{ s.registered }}</td><td>{{ s.attended }}</td><td>{{ s.fill_rate }}%</td></tr>
   {% endfor %}</tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('bar-chart', 'Статистика үшін деректер жоқ.') }}</div>
+  <div class="vp-card">{{ m.empty('bar-chart', _('Статистика үшін деректер жоқ.')) }}</div>
 {% endif %}
 {% endblock %}

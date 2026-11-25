@@ -7,7 +7,7 @@
   {% set free = e.capacity - e.registered_count %}
   {% set pct = (e.registered_count * 100 / e.capacity) | round | int %}
   <div class="d-flex justify-content-between small mb-1">
-    <span class="text-muted">Бос орын</span>
+    <span class="text-muted">{{ _('Бос орын') }}</span>
     <b>{{ free if free > 0 else 0 }} / {{ e.capacity }}</b>
   </div>
   <div class="spots {{ 'full' if free <= 0 }}"><span style="width: {{ [pct, 100] | min }}%"></span></div>
@@ -23,7 +23,7 @@
           <h3 class="h6 mb-1"><a class="stretched-link-title stretched-link" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a></h3>
           <div class="d-flex flex-wrap gap-1">
             {{ event_badge(e.status) }}
-            {% if past and e.status == 'published' %}<span class="badge-soft b-past">Өтті</span>{% endif %}
+            {% if past and e.status == 'published' %}<span class="badge-soft b-past">{{ _('Өтті') }}</span>{% endif %}
           </div>
         </div>
       </div>

@@ -4,8 +4,8 @@
 {% if card.private %}
 <div class="auth-wrap"><div class="vp-card auth-card text-center"><div class="auth-body">
   <i class="bi bi-lock-fill text-muted" style="font-size:3rem"></i>
-  <h1 class="h4 mt-2">Профиль жабық</h1>
-  <p class="text-muted mb-0">Бұл ерікті өз Volunteer ID-ін жария көрсетпейді.</p>
+  <h1 class="h4 mt-2">{{ _('Профиль жабық') }}</h1>
+  <p class="text-muted mb-0">{{ _('Бұл ерікті өз Volunteer ID-ін жария көрсетпейді.') }}</p>
 </div></div></div>
 {% else %}
 <div class="row justify-content-center"><div class="col-lg-8">
@@ -16,20 +16,20 @@
       <div class="vid-label">QAMQOR · Volunteer ID</div>
       <h1 class="h3 mb-1">{{ card.name }}</h1>
       <span class="badge-soft b-role">{{ card.level }}</span>
-      <span class="small text-muted ms-2">Порталда: {{ card.since | kz_date }} бастап</span>
+      <span class="small text-muted ms-2">{{ _('Порталда:') }} {{ card.since | kz_date }} {{ _('бастап') }}</span>
     </div>
-    <img class="vid-qr" src="{{ url_for('volunteers.qr', code=card.code) }}" alt="Профильге апаратын QR" width="140" height="140">
+    <img class="vid-qr" src="{{ url_for('volunteers.qr', code=card.code) }}" alt="{{ _('Профильге апаратын QR') }}" width="140" height="140">
   </div>
   <div class="vid-code">{{ card.code }}</div>
   <div class="row g-3 mt-1">
-    <div class="col-4"><div class="stat-tile"><b>{{ card.stats.events }}</b><span>Іс-шара</span></div></div>
-    <div class="col-4"><div class="stat-tile"><b>{{ card.stats.hours }}</b><span>Сағат</span></div></div>
-    <div class="col-4"><div class="stat-tile"><b>{{ card.earned }}/{{ card.achievements | length }}</b><span>Жетістік</span></div></div>
+    <div class="col-4"><div class="stat-tile"><b>{{ card.stats.events }}</b><span>{{ _('Іс-шара') }}</span></div></div>
+    <div class="col-4"><div class="stat-tile"><b>{{ card.stats.hours }}</b><span>{{ _('Сағат') }}</span></div></div>
+    <div class="col-4"><div class="stat-tile"><b>{{ card.earned }}/{{ card.achievements | length }}</b><span>{{ _('Жетістік') }}</span></div></div>
   </div>
 </div>
 
 <div class="vp-card vp-card-pad mb-4">
-  <h2 class="h5">Жетістіктер</h2>
+  <h2 class="h5">{{ _('Жетістіктер') }}</h2>
   <div class="row g-3">
     {% for a in card.achievements %}
     <div class="col-6 col-md-4">
@@ -45,17 +45,17 @@
 
 {% if own %}
 <div class="vp-card vp-card-pad">
-  <h2 class="h5">Жариялылық</h2>
-  <p class="text-muted">Жария сілтеме: <a href="{{ public_url }}">{{ public_url }}</a></p>
+  <h2 class="h5">{{ _('Жариялылық') }}</h2>
+  <p class="text-muted">{{ _('Жария сілтеме:') }} <a href="{{ public_url }}">{{ public_url }}</a></p>
   <form method="post" action="{{ url_for('volunteers.visibility') }}">
     {% import "_macros.html" as m %}{{ m.csrf() }}
     {% if card.public %}
       <input type="hidden" name="public" value="0">
-      <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-eye-slash"></i> Профильді жасыру</button>
-      <span class="small text-muted ms-2">Рейтингте «Жасырын ерікті» деп көрсетіледі.</span>
+      <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-eye-slash"></i> {{ _('Профильді жасыру') }}</button>
+      <span class="small text-muted ms-2">{{ _('Рейтингте «Жасырын ерікті» деп көрсетіледі.') }}</span>
     {% else %}
       <input type="hidden" name="public" value="1">
-      <button class="btn btn-primary" type="submit"><i class="bi bi-eye"></i> Профильді жария ету</button>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-eye"></i> {{ _('Профильді жария ету') }}</button>
     {% endif %}
   </form>
 </div>

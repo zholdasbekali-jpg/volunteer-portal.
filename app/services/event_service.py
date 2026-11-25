@@ -151,7 +151,8 @@ def now_str() -> str:
 
 def full_address(event) -> str:
     """'Қызылорда, Орталық саябақ' — қала мен мекенжай бірге (қала жоқ ескі жазбаларда тек мекенжай)."""
-    city = event["city"] if "city" in event.keys() else ""
+    from ..i18n import tr
+    city = tr(event["city"]) if "city" in event.keys() and event["city"] else ""
     return f"{city}, {event['location']}" if city else event["location"]
 
 

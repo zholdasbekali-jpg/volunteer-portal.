@@ -1,10 +1,11 @@
 {% import "_macros.html" as m %}
 <!doctype html>
-<html lang="kk">
+<html lang="{{ current_lang() }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Еріктілер порталы{% endblock %} · Еріктілер порталы</title>
+  <meta name="vp-i18n" content='{{ js_i18n() | tojson }}'>
+  <title>{% block title %}{{ _('Еріктілер порталы') }}{% endblock %} {{ _('· Еріктілер порталы') }}</title>
   <link rel="icon" type="image/png" href="{{ static_url('images/favicon.png') }}">
   <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}" rel="stylesheet">
@@ -15,39 +16,47 @@
   <nav class="navbar navbar-expand-xl vp-nav sticky-top" data-bs-theme="dark">
     <div class="container">
       <a class="navbar-brand vp-brand" href="{{ url_for('events.index') }}">
-        <img class="vp-logo" src="{{ static_url('images/logo.png') }}" alt="QAMQOR — Еріктілер порталы">
+        <img class="vp-logo" src="{{ static_url('images/logo.png') }}" alt="{{ _('QAMQOR — Еріктілер порталы') }}">
       </a>
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Мәзір">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="{{ _('Мәзір') }}">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto gap-xl-1 mt-2 mt-xl-0">
-          <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('events.catalog','events.detail') }}" href="{{ url_for('events.catalog') }}">Іс-шаралар</a></li>
-          <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('certificates.scan','certificates.verify') }}" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> Сертификатты тексеру</a></li>
-          <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'volunteers.rating' }}" href="{{ url_for('volunteers.rating') }}"><i class="bi bi-trophy"></i> Рейтинг</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('events.catalog','events.detail') }}" href="{{ url_for('events.catalog') }}">{{ _('Іс-шаралар') }}</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('certificates.scan','certificates.verify') }}" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> {{ _('Сертификатты тексеру') }}</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'volunteers.rating' }}" href="{{ url_for('volunteers.rating') }}"><i class="bi bi-trophy"></i> {{ _('Рейтинг') }}</a></li>
           {% if current_user.is_authenticated %}
             {% if current_user.is_volunteer %}
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'registrations.my_registrations' }}" href="{{ url_for('registrations.my_registrations') }}">Менің тіркелімдерім</a></li>
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'certificates.list_certificates' }}" href="{{ url_for('certificates.list_certificates') }}">Сертификаттар</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'registrations.my_registrations' }}" href="{{ url_for('registrations.my_registrations') }}">{{ _('Менің тіркелімдерім') }}</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'certificates.list_certificates' }}" href="{{ url_for('certificates.list_certificates') }}">{{ _('Сертификаттар') }}</a></li>
             {% elif current_user.is_organizer %}
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep.startswith('events.organizer') or ep in ('events.create','events.edit','events.participants') }}" href="{{ url_for('events.organizer_dashboard') }}">Ұйымдастырушы панелі</a></li>
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'statistics.page' }}" href="{{ url_for('statistics.page') }}">Статистика</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep.startswith('events.organizer') or ep in ('events.create','events.edit','events.participants') }}" href="{{ url_for('events.organizer_dashboard') }}">{{ _('Ұйымдастырушы панелі') }}</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'statistics.page' }}" href="{{ url_for('statistics.page') }}">{{ _('Статистика') }}</a></li>
             {% elif current_user.is_admin %}
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">Әкімші панелі</a></li>
-              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'statistics.page' }}" href="{{ url_for('statistics.page') }}">Статистика</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ _('Әкімші панелі') }}</a></li>
+              <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'statistics.page' }}" href="{{ url_for('statistics.page') }}">{{ _('Статистика') }}</a></li>
             {% endif %}
           {% endif %}
         </ul>
         <div class="d-flex align-items-xl-center gap-2 flex-column flex-xl-row mt-2 mt-xl-0">
+          <div class="dropdown vp-lang">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ _('Тіл') }}"><i class="bi bi-translate"></i> {% for code, name, short in LANGS %}{% if code == current_lang() %}{{ short }}{% endif %}{% endfor %}</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% for code, name, short in LANGS %}
+                <li><a class="dropdown-item {{ 'active' if code == current_lang() }}" href="{{ url_for('language.switch', code=code, next=request.full_path.rstrip('?')) }}" hreflang="{{ code }}" lang="{{ code }}">{{ name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
           {% if current_user.is_authenticated %}
-            <a class="small vp-nav-user text-decoration-none {{ 'active' if ep.startswith('cabinet.') }}" href="{{ url_for('cabinet.index') }}" title="Жеке кабинет"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
+            <a class="small vp-nav-user text-decoration-none {{ 'active' if ep.startswith('cabinet.') }}" href="{{ url_for('cabinet.index') }}" title="{{ _('Жеке кабинет') }}"><i class="bi bi-person-circle"></i> {{ current_user.full_name }}
               <span class="badge-soft b-role ms-1">{{ current_user.role_label }}</span></a>
             <form method="post" action="{{ url_for('auth.logout') }}">{{ m.csrf() }}
-              <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Шығу</button>
+              <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> {{ _('Шығу') }}</button>
             </form>
           {% else %}
-            <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.login') }}">Кіру</a>
-            <a class="btn btn-gold btn-sm" href="{{ url_for('auth.register') }}">Тіркелу</a>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.login') }}">{{ _('Кіру') }}</a>
+            <a class="btn btn-gold btn-sm" href="{{ url_for('auth.register') }}">{{ _('Тіркелу') }}</a>
           {% endif %}
         </div>
       </div>
@@ -58,7 +67,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
         <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-4" role="alert">
-          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Жабу"></button>
+          {{ _(message) }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ _('Жабу') }}"></button>
         </div>
       {% endfor %}
     {% endwith %}
@@ -68,7 +77,7 @@
   <footer class="vp-footer py-3 mt-4">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
       <img src="{{ static_url('images/logo.png') }}" alt="QAMQOR">
-      <span>© Еріктілер іс-шаралары порталы · <span class="handle">@Qamqor_11</span></span>
+      <span>{{ _('© Еріктілер іс-шаралары порталы ·') }} <span class="handle">@Qamqor_11</span></span>
     </div>
   </footer>
   <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>

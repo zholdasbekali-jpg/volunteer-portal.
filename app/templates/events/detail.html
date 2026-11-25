@@ -4,7 +4,7 @@
 {% block content %}
 {% set free = event.capacity - event.registered_count %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small">
-  <li class="breadcrumb-item"><a href="{{ url_for('events.catalog') }}">Іс-шаралар</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('events.catalog') }}">{{ _('Іс-шаралар') }}</a></li>
   <li class="breadcrumb-item active">{{ event.title }}</li>
 </ol></nav>
 <div class="row g-4">
@@ -12,54 +12,54 @@
     <div class="vp-card vp-card-pad">
       <div class="d-flex flex-wrap gap-2 mb-2">
         {{ m.event_badge(event.status) }}
-        {% if past %}<span class="badge-soft b-past">Өтті</span>{% endif %}
+        {% if past %}<span class="badge-soft b-past">{{ _('Өтті') }}</span>{% endif %}
       </div>
       <h1 class="h2 mb-3">{{ event.title }}</h1>
       <div class="row g-2 mb-4">
-        <div class="col-sm-6 meta"><i class="bi bi-clock fs-5"></i><span>{{ event.event_date | kz_datetime }} · {{ event.hours }} сағ</span></div>
+        <div class="col-sm-6 meta"><i class="bi bi-clock fs-5"></i><span>{{ event.event_date | kz_datetime }} · {{ event.hours }} {{ _('сағ') }}</span></div>
         <div class="col-sm-6 meta"><i class="bi bi-geo-alt fs-5"></i><span>{{ event | full_address }}
-          <a class="small ms-1" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ (event | full_address) | urlencode }}"><i class="bi bi-map"></i> Картада көру</a></span></div>
-        <div class="col-sm-6 meta"><i class="bi bi-person-badge fs-5"></i><span>Ұйымдастырушы: {{ event.organizer_name }}</span></div>
+          <a class="small ms-1" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ (event | full_address) | urlencode }}"><i class="bi bi-map"></i> {{ _('Картада көру') }}</a></span></div>
+        <div class="col-sm-6 meta"><i class="bi bi-person-badge fs-5"></i><span>{{ _('Ұйымдастырушы:') }} {{ event.organizer_name }}</span></div>
       </div>
-      <h2 class="h6 text-uppercase text-muted">Сипаттамасы</h2>
-      <p style="white-space: pre-line">{{ event.description or 'Сипаттама көрсетілмеген.' }}</p>
+      <h2 class="h6 text-uppercase text-muted">{{ _('Сипаттамасы') }}</h2>
+      <p style="white-space: pre-line">{{ event.description or _('Сипаттама көрсетілмеген.') }}</p>
     </div>
   </div>
   <div class="col-lg-4">
     <div class="vp-card vp-card-pad">
       <div class="mb-3">{{ m.spots_bar(event) }}</div>
-      <p class="small text-muted mb-3">Тіркелгені: <b>{{ event.registered_count }}</b> · Қатысқаны расталған: <b>{{ event.attended_count }}</b></p>
+      <p class="small text-muted mb-3">{{ _('Тіркелгені:') }} <b>{{ event.registered_count }}</b> {{ _('· Қатысқаны расталған:') }} <b>{{ event.attended_count }}</b></p>
 
       {% if not current_user.is_authenticated %}
-        <a class="btn btn-primary w-100" href="{{ url_for('auth.login', next=request.path) }}">Тіркелу үшін кіріңіз</a>
+        <a class="btn btn-primary w-100" href="{{ url_for('auth.login', next=request.path) }}">{{ _('Тіркелу үшін кіріңіз') }}</a>
       {% elif current_user.is_volunteer %}
         {% if my_reg %}
-          <div class="alert alert-success py-2 mb-2"><i class="bi bi-check-circle"></i> Сіз тіркелгенсіз · {{ m.reg_badge(my_reg.status) }}</div>
+          <div class="alert alert-success py-2 mb-2"><i class="bi bi-check-circle"></i> {{ _('Сіз тіркелгенсіз ·') }} {{ m.reg_badge(my_reg.status) }}</div>
           {% if my_reg.status == 'pending' and not past %}
-            <form method="post" action="{{ url_for('registrations.cancel', registration_id=my_reg.id) }}" data-confirm="Тіркелуден бас тартуға сенімдісіз бе?">
-              {{ m.csrf() }}<button class="btn btn-outline-danger w-100" type="submit">Тіркелуден бас тарту</button>
+            <form method="post" action="{{ url_for('registrations.cancel', registration_id=my_reg.id) }}" data-confirm="{{ _('Тіркелуден бас тартуға сенімдісіз бе?') }}">
+              {{ m.csrf() }}<button class="btn btn-outline-danger w-100" type="submit">{{ _('Тіркелуден бас тарту') }}</button>
             </form>
           {% endif %}
         {% elif event.status != 'published' %}
-          <div class="alert alert-secondary mb-0">Іс-шара тоқтатылған, тіркелу жабық.</div>
+          <div class="alert alert-secondary mb-0">{{ _('Іс-шара тоқтатылған, тіркелу жабық.') }}</div>
         {% elif past %}
-          <div class="alert alert-secondary mb-0">Іс-шара өтіп кеткен.</div>
+          <div class="alert alert-secondary mb-0">{{ _('Іс-шара өтіп кеткен.') }}</div>
         {% elif free <= 0 %}
-          <div class="alert alert-warning mb-0"><i class="bi bi-exclamation-triangle"></i> Бос орын қалмады.</div>
+          <div class="alert alert-warning mb-0"><i class="bi bi-exclamation-triangle"></i> {{ _('Бос орын қалмады.') }}</div>
         {% else %}
           <form method="post" action="{{ url_for('registrations.register', event_id=event.id) }}">
-            {{ m.csrf() }}<button class="btn btn-primary w-100" type="submit" data-loading="Тіркелуде…"><i class="bi bi-hand-thumbs-up"></i> Іс-шараға тіркелу</button>
+            {{ m.csrf() }}<button class="btn btn-primary w-100" type="submit" data-loading="{{ _('Тіркелуде…') }}"><i class="bi bi-hand-thumbs-up"></i> {{ _('Іс-шараға тіркелу') }}</button>
           </form>
         {% endif %}
       {% else %}
-        <div class="alert alert-info mb-0 py-2">Тіркелу тек эріктілерге қолжетімді.</div>
+        <div class="alert alert-info mb-0 py-2">{{ _('Тіркелу тек эріктілерге қолжетімді.') }}</div>
       {% endif %}
 
       {% if can_manage %}
         <hr>
         <div class="d-grid gap-2">
-          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=event.id) }}"><i class="bi bi-people"></i> Қатысушылар</a>
-          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('events.edit', event_id=event.id) }}"><i class="bi bi-pencil"></i> Өңдеу</a>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=event.id) }}"><i class="bi bi-people"></i> {{ _('Қатысушылар') }}</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('events.edit', event_id=event.id) }}"><i class="bi bi-pencil"></i> {{ _('Өңдеу') }}</a>
         </div>
       {% endif %}
     </div>

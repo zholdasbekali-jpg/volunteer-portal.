@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Менің тіркелімдерім{% endblock %}
+{% block title %}{{ _('Менің тіркелімдерім') }}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Менің тіркелімдерім</h1>
-  <a class="btn btn-outline-primary" href="{{ url_for('certificates.list_certificates') }}"><i class="bi bi-award"></i> Сертификаттарым</a>
+  <h1 class="h3 mb-0">{{ _('Менің тіркелімдерім') }}</h1>
+  <a class="btn btn-outline-primary" href="{{ url_for('certificates.list_certificates') }}"><i class="bi bi-award"></i> {{ _('Сертификаттарым') }}</a>
 </div>
 {% if regs %}
   <div class="vp-card"><div class="table-responsive"><table class="table vp-table align-middle">
-    <thead><tr><th>Іс-шара</th><th>Күні</th><th>Орны</th><th>Қатысу мәртебесі</th><th></th></tr></thead>
+    <thead><tr><th>{{ _('Іс-шара') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Орны') }}</th><th>{{ _('Қатысу мәртебесі') }}</th><th></th></tr></thead>
     <tbody>
     {% for r in regs %}
       <tr>
         <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=r.event_id) }}">{{ r.title }}</a>
-          {% if r.event_status == 'cancelled' %}<span class="badge-soft b-cancelled ms-1">Тоқтатылған</span>{% endif %}</td>
+          {% if r.event_status == 'cancelled' %}<span class="badge-soft b-cancelled ms-1">{{ _('Тоқтатылған') }}</span>{% endif %}</td>
         <td class="text-nowrap">{{ r.event_date | kz_datetime }}</td>
         <td>{{ r | full_address }}</td>
         <td>{{ m.reg_badge(r.status) }}</td>
         <td class="text-end text-nowrap">
           {% if r.status == 'attended' %}
-            <a class="btn btn-primary btn-sm" href="{{ url_for('certificates.download', registration_id=r.id) }}"><i class="bi bi-download"></i> Сертификат</a>
+            <a class="btn btn-primary btn-sm" href="{{ url_for('certificates.download', registration_id=r.id) }}"><i class="bi bi-download"></i> {{ _('Сертификат') }}</a>
           {% elif r.status == 'pending' and r.event_date > now_str %}
-            <form method="post" class="d-inline" action="{{ url_for('registrations.cancel', registration_id=r.id) }}" data-confirm="Тіркелуден бас тартуға сенімдісіз бе?">
-              {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit">Бас тарту</button>
+            <form method="post" class="d-inline" action="{{ url_for('registrations.cancel', registration_id=r.id) }}" data-confirm="{{ _('Тіркелуден бас тартуға сенімдісіз бе?') }}">
+              {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit">{{ _('Бас тарту') }}</button>
             </form>
           {% endif %}
         </td>
@@ -30,7 +30,7 @@
     {% endfor %}
     </tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('calendar-plus', 'Сіз әлі ешқандай іс-шараға тіркелмегенсіз.') }}
-    <div class="text-center pb-4"><a class="btn btn-primary" href="{{ url_for('events.catalog') }}">Каталогқа өту</a></div></div>
+  <div class="vp-card">{{ m.empty('calendar-plus', _('Сіз әлі ешқандай іс-шараға тіркелмегенсіз.')) }}
+    <div class="text-center pb-4"><a class="btn btn-primary" href="{{ url_for('events.catalog') }}">{{ _('Каталогқа өту') }}</a></div></div>
 {% endif %}
 {% endblock %}

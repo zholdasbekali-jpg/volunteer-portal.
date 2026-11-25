@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Жеке кабинет{% endblock %}
+{% block title %}{{ _('Жеке кабинет') }}{% endblock %}
 {% block content %}
 <div class="vp-card vp-card-pad cabinet-head mb-4">
   <div class="cabinet-avatar" aria-hidden="true">{{ profile.full_name[:1] | upper }}</div>
@@ -9,22 +9,22 @@
     <div class="d-flex flex-wrap align-items-center gap-2 text-muted">
       <span class="badge-soft b-role">{{ ROLE_LABELS.get(profile.role, profile.role) }}</span>
       <span><i class="bi bi-envelope"></i> {{ profile.email }}</span>
-      <span><i class="bi bi-calendar-check"></i> Тіркелген күні: {{ profile.created_at[:10] }}</span>
+      <span><i class="bi bi-calendar-check"></i> {{ _('Тіркелген күні:') }} {{ profile.created_at[:10] }}</span>
     </div>
   </div>
   <div class="d-flex flex-wrap gap-2">
     {% if profile.role == 'volunteer' %}
-      <a class="btn btn-primary" href="{{ url_for('events.catalog') }}"><i class="bi bi-search"></i> Іс-шара табу</a>
-      <a class="btn btn-outline-primary" href="{{ url_for('registrations.my_registrations') }}"><i class="bi bi-list-check"></i> Тіркелімдерім</a>
-      <a class="btn btn-outline-primary" href="{{ url_for('certificates.list_certificates') }}"><i class="bi bi-award"></i> Сертификаттар</a>
+      <a class="btn btn-primary" href="{{ url_for('events.catalog') }}"><i class="bi bi-search"></i> {{ _('Іс-шара табу') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('registrations.my_registrations') }}"><i class="bi bi-list-check"></i> {{ _('Тіркелімдерім') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('certificates.list_certificates') }}"><i class="bi bi-award"></i> {{ _('Сертификаттар') }}</a>
       <a class="btn btn-outline-primary" href="{{ url_for('volunteers.my_card') }}"><i class="bi bi-person-badge"></i> Volunteer ID</a>
     {% elif profile.role == 'organizer' %}
-      <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg"></i> Жаңа іс-шара</a>
-      <a class="btn btn-outline-primary" href="{{ url_for('events.organizer_dashboard') }}"><i class="bi bi-speedometer2"></i> Панель</a>
-      <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> Статистика</a>
+      <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Жаңа іс-шара') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('events.organizer_dashboard') }}"><i class="bi bi-speedometer2"></i> {{ _('Панель') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> {{ _('Статистика') }}</a>
     {% else %}
-      <a class="btn btn-primary" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-shield-check"></i> Әкімші панелі</a>
-      <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> Статистика</a>
+      <a class="btn btn-primary" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-shield-check"></i> {{ _('Әкімші панелі') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> {{ _('Статистика') }}</a>
     {% endif %}
   </div>
 </div>
@@ -39,39 +39,39 @@
   <div class="col-lg-7">
     {% if profile.role == 'admin' %}
       <div class="vp-card vp-card-pad mb-4">
-        <h2 class="h5">Соңғы тіркелгендер</h2>
+        <h2 class="h5">{{ _('Соңғы тіркелгендер') }}</h2>
         <div class="table-responsive"><table class="table vp-table align-middle mb-0">
-          <thead><tr><th>Аты-жөні</th><th>Рөлі</th><th>Күні</th></tr></thead>
+          <thead><tr><th>{{ _('Аты-жөні') }}</th><th>{{ _('Рөлі') }}</th><th>{{ _('Күні') }}</th></tr></thead>
           <tbody>{% for u in summary.latest_users %}
             <tr><td>{{ u.full_name }}<div class="small text-muted">{{ u.email }}</div></td>
               <td><span class="badge-soft b-role">{{ ROLE_LABELS.get(u.role, u.role) }}</span></td><td class="text-nowrap">{{ u.created_at[:10] }}</td></tr>
           {% endfor %}</tbody></table></div>
-        <a class="small" href="{{ url_for('admin.dashboard') }}#users">Барлық пайдаланушылар</a>
+        <a class="small" href="{{ url_for('admin.dashboard') }}#users">{{ _('Барлық пайдаланушылар') }}</a>
       </div>
     {% else %}
       <div class="vp-card vp-card-pad mb-4">
-        <h2 class="h5">Жақын іс-шаралар</h2>
+        <h2 class="h5">{{ _('Жақын іс-шаралар') }}</h2>
         {% if summary.upcoming %}
           <ul class="list-unstyled mb-0 cabinet-list">
           {% for e in summary.upcoming %}
             <li class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
               <div>
                 <a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a>
-                <div class="small text-muted"><i class="bi bi-clock"></i> {{ e.event_date | kz_datetime }} · {{ e.city }}</div>
+                <div class="small text-muted"><i class="bi bi-clock"></i> {{ e.event_date | kz_datetime }} · {{ _(e.city) }}</div>
               </div>
               {% if profile.role == 'organizer' %}
                 <div class="d-flex align-items-center gap-2">
                   <span class="small text-muted">{{ e.registered }} / {{ e.capacity }}</span>
-                  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=e.id) }}">Қатысушылар</a>
+                  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=e.id) }}">{{ _('Қатысушылар') }}</a>
                 </div>
               {% endif %}
             </li>
           {% endfor %}
           </ul>
         {% else %}
-          <p class="text-muted mb-0">Жақын іс-шара жоқ.
-            {% if profile.role == 'volunteer' %}<a href="{{ url_for('events.catalog') }}">Каталогтан таңдаңыз</a>.
-            {% else %}<a href="{{ url_for('events.create') }}">Жаңа іс-шара құрыңыз</a>.{% endif %}</p>
+          <p class="text-muted mb-0">{{ _('Жақын іс-шара жоқ.') }}
+            {% if profile.role == 'volunteer' %}<a href="{{ url_for('events.catalog') }}">{{ _('Каталогтан таңдаңыз') }}</a>.
+            {% else %}<a href="{{ url_for('events.create') }}">{{ _('Жаңа іс-шара құрыңыз') }}</a>.{% endif %}</p>
         {% endif %}
       </div>
     {% endif %}
@@ -79,29 +79,29 @@
 
   <div class="col-lg-5">
     <div class="vp-card vp-card-pad mb-4">
-      <h2 class="h5">Профиль</h2>
+      <h2 class="h5">{{ _('Профиль') }}</h2>
       <form method="post" action="{{ url_for('cabinet.update_profile') }}" novalidate>
         {{ m.csrf() }}
-        <label class="form-label" for="full_name">Аты-жөні</label>
+        <label class="form-label" for="full_name">{{ _('Аты-жөні') }}</label>
         <input class="form-control mb-3" id="full_name" name="full_name" value="{{ profile.full_name }}" maxlength="120" required autocomplete="name">
-        <label class="form-label" for="email_ro">Электрондық пошта</label>
+        <label class="form-label" for="email_ro">{{ _('Электрондық пошта') }}</label>
         <input class="form-control mb-1" id="email_ro" value="{{ profile.email }}" disabled>
-        <div class="form-text mb-3">Поштаны өзгерту үшін әкімшіге жүгініңіз.</div>
-        <button class="btn btn-primary" type="submit">Сақтау</button>
+        <div class="form-text mb-3">{{ _('Поштаны өзгерту үшін әкімшіге жүгініңіз.') }}</div>
+        <button class="btn btn-primary" type="submit">{{ _('Сақтау') }}</button>
       </form>
     </div>
     <div class="vp-card vp-card-pad">
-      <h2 class="h5">Құпиясөзді өзгерту</h2>
+      <h2 class="h5">{{ _('Құпиясөзді өзгерту') }}</h2>
       <form method="post" action="{{ url_for('cabinet.change_password') }}" novalidate>
         {{ m.csrf() }}
-        <label class="form-label" for="current_password">Қазіргі құпиясөз</label>
+        <label class="form-label" for="current_password">{{ _('Қазіргі құпиясөз') }}</label>
         <input class="form-control mb-3" type="password" id="current_password" name="current_password" required autocomplete="current-password">
-        <label class="form-label" for="new_password">Жаңа құпиясөз</label>
+        <label class="form-label" for="new_password">{{ _('Жаңа құпиясөз') }}</label>
         <input class="form-control mb-1" type="password" id="new_password" name="new_password" minlength="8" required autocomplete="new-password">
-        <div class="form-text mb-3">Кемінде 8 таңба, бір әріп және бір цифр.</div>
-        <label class="form-label" for="confirm_password">Жаңа құпиясөзді қайталаңыз</label>
+        <div class="form-text mb-3">{{ _('Кемінде 8 таңба, бір әріп және бір цифр.') }}</div>
+        <label class="form-label" for="confirm_password">{{ _('Жаңа құпиясөзді қайталаңыз') }}</label>
         <input class="form-control mb-3" type="password" id="confirm_password" name="confirm_password" required autocomplete="new-password">
-        <button class="btn btn-primary" type="submit">Өзгерту</button>
+        <button class="btn btn-primary" type="submit">{{ _('Өзгерту') }}</button>
       </form>
     </div>
   </div>

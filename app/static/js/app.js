@@ -31,6 +31,11 @@
     });
   });
 
+  // Серверден келген аударылған хабарлар (тіл ауысқанда да дұрыс көрінеді)
+  var T = {};
+  try { T = JSON.parse(document.querySelector('meta[name="vp-i18n"]').content); } catch (e) {}
+  window.VP_T = function (key, fallback) { return T[key] || fallback; };
+
   // Графиктердің жүктелу/қате күйі
   document.querySelectorAll(".chart-box img").forEach(function (img) {
     var box = img.closest(".chart-box");
@@ -38,7 +43,8 @@
     img.addEventListener("load", function () { box.classList.remove("loading"); });
     img.addEventListener("error", function () {
       box.classList.remove("loading");
-      box.innerHTML = '<div class="empty"><i class="bi bi-exclamation-triangle"></i>График жүктелмеді. Бетті жаңартып көріңіз.</div>';
+      box.innerHTML = '<div class="empty"><i class="bi bi-exclamation-triangle"></i></div>';
+      box.firstChild.appendChild(document.createTextNode(" " + window.VP_T("chart_error", "График жүктелмеді. Бетті жаңартып көріңіз.")));
     });
   });
 

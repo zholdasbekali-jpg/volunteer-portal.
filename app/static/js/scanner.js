@@ -56,7 +56,7 @@
         timer = setInterval(tick, 200);
       })
       .catch(function () {
-        say("Камераға рұқсат берілмеді немесе камера табылмады. Фотоны жүктеңіз немесе нөмірді қолмен енгізіңіз.");
+        say(window.VP_T("camera_denied", "Камераға рұқсат берілмеді немесе камера табылмады. Фотоны жүктеңіз немесе нөмірді қолмен енгізіңіз."));
       });
   });
   stopBtn.addEventListener("click", stop);
@@ -71,9 +71,9 @@
       var result = decode(img, img.naturalWidth, img.naturalHeight, 1600);
       URL.revokeObjectURL(url);
       if (result && result.data) go(result.data);
-      else say("Суреттен QR-код табылмады. Анығырақ, жақынырақ түсіріп көріңіз немесе нөмірді қолмен енгізіңіз.");
+      else say(window.VP_T("no_qr", "Суреттен QR-код табылмады. Анығырақ, жақынырақ түсіріп көріңіз немесе нөмірді қолмен енгізіңіз."));
     };
-    img.onerror = function () { URL.revokeObjectURL(url); say("Суретті оқу мүмкін болмады."); };
+    img.onerror = function () { URL.revokeObjectURL(url); say(window.VP_T("image_error", "Суретті оқу мүмкін болмады.")); };
     img.src = url;
   });
 

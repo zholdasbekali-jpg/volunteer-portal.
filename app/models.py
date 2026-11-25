@@ -52,4 +52,5 @@ class User(UserMixin):
 
     @property
     def role_label(self) -> str:
-        return ROLE_LABELS.get(self.role, self.role)
+        from .i18n import tr
+        return tr(ROLE_LABELS.get(self.role, self.role))

@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}Іс-шаралар каталогы{% endblock %}
+{% block title %}{{ _('Іс-шаралар каталогы') }}{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">Іс-шаралар каталогы</h1>
+<h1 class="h3 mb-3">{{ _('Іс-шаралар каталогы') }}</h1>
 <form class="vp-card vp-card-pad mb-4" method="get" action="{{ url_for('events.catalog') }}">
   <div class="row g-3 align-items-end">
     <div class="col-lg-3">
-      <label class="form-label" for="q">Іздеу (сөз, қала, уақыт)</label>
-      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Мысалы: экология Қызылордада осы апта">
+      <label class="form-label" for="q">{{ _('Іздеу (сөз, қала, уақыт)') }}</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="{{ _('Мысалы: экология Қызылордада осы апта') }}">
     </div>
     <div class="col-sm-6 col-lg-2">
-      <label class="form-label" for="city">Қала</label>
+      <label class="form-label" for="city">{{ _('Қала') }}</label>
       <select class="form-select" id="city" name="city">
-        <option value="">Барлық қалалар</option>
-        {% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == city }}>{{ c }}</option>{% endfor %}
+        <option value="">{{ _('Барлық қалалар') }}</option>
+        {% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == city }}>{{ _(c) }}</option>{% endfor %}
       </select>
     </div>
     <div class="col-sm-6 col-lg-2">
-      <label class="form-label" for="date">Күні</label>
+      <label class="form-label" for="date">{{ _('Күні') }}</label>
       <input class="form-control" id="date" name="date" type="date" value="{{ date }}">
     </div>
     <div class="col-sm-6 col-lg-2">
-      <label class="form-label" for="status">Мәртебесі</label>
+      <label class="form-label" for="status">{{ _('Мәртебесі') }}</label>
       <select class="form-select" id="status" name="status">
         {% for value, label in status_filters %}<option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div class="col-lg-3 d-flex gap-2">
-      <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel"></i> Іздеу</button>
-      {% if q or date or status or city %}<a class="btn btn-outline-secondary" href="{{ url_for('events.catalog') }}" title="Тазалау" aria-label="Сүзгіні тазалау"><i class="bi bi-x-lg"></i></a>{% endif %}
+      <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel"></i> {{ _('Іздеу') }}</button>
+      {% if q or date or status or city %}<a class="btn btn-outline-secondary" href="{{ url_for('events.catalog') }}" title="{{ _('Тазалау') }}" aria-label="{{ _('Сүзгіні тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}
     </div>
   </div>
 </form>
 
 {% if hints %}
-  <p class="small text-muted mb-3"><i class="bi bi-lightbulb"></i> Түсінген іздеу:
+  <p class="small text-muted mb-3"><i class="bi bi-lightbulb"></i> {{ _('Түсінген іздеу:') }}
     {% for h in hints %}<span class="badge-soft b-role me-1 text-nowrap d-inline-block mb-1">{{ h }}</span>{% endfor %}</p>
 {% endif %}
 {% if total == 0 %}
-  <div class="vp-card">{{ m.empty('search', 'Іс-шаралар табылмады. Іздеу шарттарын өзгертіп көріңіз.') }}</div>
+  <div class="vp-card">{{ m.empty('search', _('Іс-шаралар табылмады. Іздеу шарттарын өзгертіп көріңіз.')) }}</div>
 {% else %}
   {% for title, items in groups %}
     {% if items %}

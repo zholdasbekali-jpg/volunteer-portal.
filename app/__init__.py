@@ -8,7 +8,7 @@ from werkzeug.routing import IntegerConverter
 
 from config import Config
 
-from . import database
+from . import database, i18n
 from .models import (EVENT_STATUS_LABELS, REG_STATUS_LABELS, ROLE_LABELS, User)
 from .security import csrf_protect, get_csrf_token
 from .services import auth_service, certificate_service, event_service
@@ -18,16 +18,11 @@ login_manager.login_view = "auth.login"
 login_manager.login_message = "Бұл бетті көру үшін жүйеге кіріңіз."
 login_manager.login_message_category = "warning"
 
-KZ_MONTHS = certificate_service.KZ_MONTHS
 
 
 def kz_datetime(value: str, with_time: bool = True) -> str:
-    """'2026-05-01 10:00' -> '1 мамыр 2026, 10:00'."""
-    if not value:
-        return ""
-    y, m, d = int(value[:4]), int(value[5:7]), int(value[8:10])
-    text = f"{d} {KZ_MONTHS[m - 1]} {y}"
-    return f"{text}, {value[11:16]}" if with_time and len(value) >= 16 else text
+    """Күнді ағымдағы тілде көрсетеді (қазақша/орысша/ағылшынша)."""
+    return i18n.format_date(value, with_time)
 
 
 class SafeIntConverter(IntegerConverter):
@@ -71,14 +66,19 @@ def create_app(config_object=None, **overrides) -> Flask:
     app.jinja_env.globals["csrf_token"] = get_csrf_token
     app.jinja_env.globals["now_str"] = event_service.now_str
     app.jinja_env.filters["full_address"] = event_service.full_address
+    app.jinja_env.globals["_"] = i18n.gettext
+    app.jinja_env.globals["current_lang"] = i18n.get_lang
+    app.jinja_env.globals.update(LANGS=i18n.LANGS, js_i18n=i18n.js_strings)
     app.jinja_env.filters["kz_datetime"] = kz_datetime
     app.jinja_env.filters["kz_date"] = lambda v: kz_datetime(v, with_time=False)
-    app.jinja_env.globals.update(ROLE_LABELS=ROLE_LABELS, EVENT_STATUS_LABELS=EVENT_STATUS_LABELS,
-                                 REG_STATUS_LABELS=REG_STATUS_LABELS)
+    app.jinja_env.globals.update(ROLE_LABELS=i18n.LabelDict(ROLE_LABELS),
+                                 EVENT_STATUS_LABELS=i18n.LabelDict(EVENT_STATUS_LABELS),
+                                 REG_STATUS_LABELS=i18n.LabelDict(REG_STATUS_LABELS))
 
-    from . import (admin, auth, cabinet, certificates, checkin, events, registrations, statistics,
-                   volunteers)
-    for module in (auth, events, registrations, certificates, checkin, cabinet, volunteers, statistics, admin):
+    from . import (admin, auth, cabinet, certificates, checkin, events, language, registrations,
+                   statistics, volunteers)
+    for module in (auth, events, registrations, certificates, checkin, cabinet, volunteers, statistics, admin,
+                   language):
         app.register_blueprint(module.bp)
 
     register_error_handlers(app)

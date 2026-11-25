@@ -20,6 +20,7 @@ def _scope():
 def page():
     scope = _scope()
     return render_template("statistics.html", summary=statistics_service.get_summary(scope),
+                           extended=statistics_service.get_extended(scope),
                            stats=statistics_service.get_event_stats(scope))
 
 

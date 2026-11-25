@@ -42,12 +42,15 @@ def seed_demo() -> str:
         ("Қарттарға көмек: үйге қызмет", "Жалғыз тұратын қарттарға дүкен мен дәріхана бойынша көмек.",
          "Шымкент", "Әйтеке би көшесі, 21", _when(21, 10), 10, org2),
     ]
+    # events тізімімен бірдей реттілік
+    categories = ("ecology", "charity", "culture", "ecology", "ecology", "charity")
     ids = []
     with transaction() as tdb:
-        for title, desc, city, loc, when, cap, org in events:
+        for (title, desc, city, loc, when, cap, org), category in zip(events, categories):
             cur = tdb.execute(
-                "INSERT INTO events (title, description, city, location, event_date, capacity, hours, organizer_id) VALUES (?,?,?,?,?,?,?,?)",
-                (title, desc, city, loc, when, cap, 2 + len(title) % 4, org))
+                "INSERT INTO events (title, description, city, location, event_date, capacity, hours,"
+                " organizer_id, category) VALUES (?,?,?,?,?,?,?,?,?)",
+                (title, desc, city, loc, when, cap, 2 + len(title) % 4, org, category))
             ids.append(cur.lastrowid)
         # Тіркелімдер: өткен іс-шараларға қатысу белгіленген, толған іс-шара да бар
         plan = [(0, vols[0], "attended"), (0, vols[1], "attended"), (0, vols[2], "absent"),

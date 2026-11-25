@@ -62,6 +62,19 @@ TEXTS = {
         "scan": "Проверка по QR-коду",
         "portal": "ПОРТАЛ ВОЛОНТЁРСКИХ МЕРОПРИЯТИЙ",
     },
+    "en": {
+        "title": "CERTIFICATE",
+        "awarded": "This certificate is awarded to",
+        "reason": ["for active participation, integrity and generosity of spirit",
+                   "shown at an event of the “QAMQOR” volunteer project:"],
+        "event_date": "Event date",
+        "issued": "Issued",
+        "organizer": "Organizer",
+        "number": "Certificate number",
+        "verify": "Verify authenticity",
+        "scan": "Scan the QR code to verify",
+        "portal": "VOLUNTEER EVENTS PORTAL",
+    },
 }
 _fonts_ready = False
 log = logging.getLogger(__name__)
@@ -84,11 +97,18 @@ RU_MONTHS = ["января", "февраля", "марта", "апреля", "м
              "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
 
-def _fmt_date(value: str) -> str:
-    """Күнді CERT_LANG тіліне сай пішімдейді."""
-    if CERT_LANG == "ru":
-        d = datetime.strptime(value[:10], "%Y-%m-%d")
+EN_MONTHS = ["January", "February", "March", "April", "May", "June",
+             "July", "August", "September", "October", "November", "December"]
+
+
+def _fmt_date(value: str, lang: str = "") -> str:
+    """Күнді сертификат тіліне сай пішімдейді (lang бос болса — CERT_LANG)."""
+    lang = lang or CERT_LANG
+    d = datetime.strptime(value[:10], "%Y-%m-%d")
+    if lang == "ru":
         return f"{d.day} {RU_MONTHS[d.month - 1]} {d.year} г."
+    if lang == "en":
+        return f"{d.day} {EN_MONTHS[d.month - 1]} {d.year}"
     return format_date_kz(value)
 
 
@@ -213,10 +233,11 @@ def _draw_qr(c, x, y, size, url) -> None:
 
 
 def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at, organizer, city="",
-               verify_url="") -> None:
-    """QAMQOR стиліндегі A4 альбомдық сертификатты жасайды (мәтін TEXTS[CERT_LANG])."""
+               verify_url="", lang="") -> None:
+    """QAMQOR стиліндегі A4 альбомдық сертификатты жасайды (мәтін TEXTS[lang], lang бос болса — CERT_LANG)."""
     _register_fonts()
-    t = TEXTS[CERT_LANG]
+    lang = lang if lang in TEXTS else CERT_LANG
+    t = TEXTS[lang]
     w, h = landscape(A4)
     c = canvas.Canvas(path, pagesize=(w, h))
     c.setTitle(f"{t['title']} {code}")
@@ -254,7 +275,7 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.drawCentredString(w / 2, h - 434, quoted)
     c.setFillColor(IVORY)
     c.setFont(SERIF, 11.5)
-    when = f"{t['event_date']}: {_fmt_date(event_date)}" + (f", {city}" if city else "")
+    when = f"{t['event_date']}: {_fmt_date(event_date, lang)}" + (f", {city}" if city else "")
     c.drawCentredString(w / 2, h - 456, when)
 
     c.setFillColor(GOLD)
@@ -268,7 +289,7 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.line(w - 290, 76, w - 80, 76)
     c.setFillColor(IVORY)
     c.setFont(SERIF, 10)
-    c.drawString(80, 62, f"{t['issued']}: {_fmt_date(issued_at)}")
+    c.drawString(80, 62, f"{t['issued']}: {_fmt_date(issued_at, lang)}")
     org = f"{t['organizer']}: {organizer}"
     c.drawRightString(w - 80, 62, org if pdfmetrics.stringWidth(org, SERIF, 10) <= 210 else organizer)
     c.setFillColor(GOLD)
@@ -286,7 +307,7 @@ def render_pdf(path: str, *, code, volunteer, event_title, event_date, issued_at
     c.save()
 
 
-def issue_certificate(actor, registration_id: int, base_url: str = ""):
+def issue_certificate(actor, registration_id: int, base_url: str = "", lang: str = ""):
     """Сертификатты береді (бар болса — қайтарады). Тек қатысуы расталған ерікті
     өз тіркелімі үшін ала алады. base_url берілсе, PDF-ке /verify/<нөмір> сілтемесі бар QR қосылады.
     Нәтиже: certificates жолы."""
@@ -312,6 +333,12 @@ def issue_certificate(actor, registration_id: int, base_url: str = ""):
     out_dir.mkdir(parents=True, exist_ok=True)
     issued_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     with transaction() as tdb:
+        # Құлыпты алғаннан кейін қайта тексереміз: екі қатар сұрау (қос басу) бір сертификатты
+        # екі рет жасап, UNIQUE қатесімен құламауы үшін
+        again = tdb.execute("SELECT * FROM certificates WHERE registration_id = ?", (registration_id,)).fetchone()
+        if again is not None and os.path.exists(again["pdf_path"]):
+            return again
+        existing = again
         if existing is None:
             code = generate_code(tdb)
         else:  # файл жоғалған: сол нөмірмен қайта жасаймыз
@@ -319,7 +346,7 @@ def issue_certificate(actor, registration_id: int, base_url: str = ""):
         pdf_path = str(out_dir / f"certificate_{code}.pdf")
         render_pdf(pdf_path, code=code, volunteer=row["full_name"], event_title=row["title"],
                    event_date=row["event_date"], issued_at=issued_at, organizer=row["organizer_name"],
-                   city=row["city"],
+                   city=row["city"], lang=lang,
                    verify_url=f"{base_url.rstrip('/')}/verify/{code}" if base_url else "")
         if existing is None:
             tdb.execute(

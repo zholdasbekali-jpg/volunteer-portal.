@@ -22,8 +22,8 @@
 </section>
 
 <section class="row g-3 mb-5">
-  {% for value, label in [(summary.events_total, _('Іс-шара')), (summary.volunteers_total, _('Ерікті')), (summary.registrations_total, _('Тіркелім')), (summary.attended_total, _('Расталған қатысу'))] %}
-    <div class="col-6 col-md-3"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
+  {% for value, label in [(summary.events_total, 'Іс-шара'), (summary.volunteers_total, 'Ерікті'), (summary.registrations_total, 'Тіркелім'), (summary.attended_total, 'Расталған қатысу')] %}
+    <div class="col-6 col-md-3"><div class="stat-tile"><b>{{ value }}</b><span>{{ _(label) }}</span></div></div>
   {% endfor %}
 </section>
 
@@ -35,7 +35,7 @@
   {% if upcoming %}
     <div class="row g-3">{% for e in upcoming %}<div class="col-md-6 col-lg-4">{{ m.event_card(e) }}</div>{% endfor %}</div>
   {% else %}
-    <div class="vp-card">{{ m.empty('calendar-x', _('Алдағы іс-шаралар әзірге жоқ.')) }}</div>
+    <div class="vp-card">{{ m.empty('calendar-x', 'Алдағы іс-шаралар әзірге жоқ.') }}</div>
   {% endif %}
 </section>
 {% endblock %}

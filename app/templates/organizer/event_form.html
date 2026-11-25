@@ -17,6 +17,14 @@
     </div>
     <div class="row g-3 mb-3">
       <div class="col-md-4">
+        <label class="form-label" for="category">{{ _('Санат') }}</label>
+        <select class="form-select" id="category" name="category">
+          {% for code, label in categories %}<option value="{{ code }}" {{ 'selected' if form.get('category', 'other') == code }}>{{ _(label) }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
         <label class="form-label" for="city">{{ _('Қала *') }}</label>
         <select class="form-select" id="city" name="city" required>
           <option value="" disabled {{ 'selected' if not form.get('city') }}>{{ _('Қаланы таңдаңыз') }}</option>

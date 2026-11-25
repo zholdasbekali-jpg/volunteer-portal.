@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     role          TEXT NOT NULL DEFAULT 'volunteer'
                   CHECK (role IN ('volunteer', 'organizer', 'admin')),
+    approval      TEXT NOT NULL DEFAULT 'approved',  -- V3: organizer үшін 'pending'/'approved'/'rejected'
     created_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
@@ -57,9 +58,50 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     locked_until REAL NOT NULL DEFAULT 0
 );
 
+-- V3: орын қалмағанда күту тізімі, еріктінің таңдаулы іс-шаралары,
+-- іс-шарадан кейінгі пікірлер мен әкімші әрекеттерінің журналы.
+CREATE TABLE IF NOT EXISTS waitlist (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id     INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE (user_id, event_id)
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id     INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    PRIMARY KEY (user_id, event_id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id     INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating       INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment      TEXT NOT NULL DEFAULT '',
+    created_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE (event_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action       TEXT NOT NULL,
+    target_type  TEXT NOT NULL DEFAULT '',
+    target_id    INTEGER,
+    details      TEXT NOT NULL DEFAULT '',
+    created_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_events_date       ON events(event_date);
 CREATE INDEX IF NOT EXISTS idx_events_organizer  ON events(organizer_id);
 CREATE INDEX IF NOT EXISTS idx_reg_event         ON registrations(event_id);
+CREATE INDEX IF NOT EXISTS idx_waitlist_event    ON waitlist(event_id, created_at, id);
+CREATE INDEX IF NOT EXISTS idx_reviews_event     ON reviews(event_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_user    ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created     ON audit_log(created_at DESC);
 """
 
 
@@ -88,22 +130,35 @@ def close_db(_exc=None) -> None:
         db.close()
 
 
+def _add_column(db, table: str, column: str, ddl: str) -> None:
+    """ALTER TABLE ... ADD COLUMN. Екі gunicorn worker бір мезгілде іске қосылса, екіншісі
+    "duplicate column name" алады: бұл қате емес, баған бұрыннан бар деген сөз."""
+    if column in {r["name"] for r in db.execute(f"PRAGMA table_info({table})")}:
+        return
+    try:
+        db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
+    except sqlite3.OperationalError as exc:
+        if "duplicate column" not in str(exc).lower():
+            raise
+
+
 def init_db() -> None:
     """Кестелерді құрады (бар болса, тимейді) және ескі қорларды жаңа схемаға көшіреді."""
     db = get_db()
     db.executescript(SCHEMA)
     # Миграция: city бағаны қосылғанға дейін жасалған қорларда ол жоқ — деректерді жоғалтпай қосамыз
-    if "city" not in {r["name"] for r in db.execute("PRAGMA table_info(events)")}:
-        db.execute("ALTER TABLE events ADD COLUMN city TEXT NOT NULL DEFAULT ''")
+    _add_column(db, "events", "city", "TEXT NOT NULL DEFAULT ''")
     db.execute("CREATE INDEX IF NOT EXISTS idx_events_city ON events(city)")
     # V2: іс-шара ұзақтығы (волонтёрлік сағат) және ерікті жария ID-і
-    if "hours" not in {r["name"] for r in db.execute("PRAGMA table_info(events)")}:
-        db.execute("ALTER TABLE events ADD COLUMN hours INTEGER NOT NULL DEFAULT 3")
-    ucols = {r["name"] for r in db.execute("PRAGMA table_info(users)")}
-    if "public_code" not in ucols:
-        db.execute("ALTER TABLE users ADD COLUMN public_code TEXT")
-    if "id_public" not in ucols:
-        db.execute("ALTER TABLE users ADD COLUMN id_public INTEGER NOT NULL DEFAULT 1")
+    _add_column(db, "events", "hours", "INTEGER NOT NULL DEFAULT 3")
+    _add_column(db, "users", "public_code", "TEXT")
+    _add_column(db, "users", "id_public", "INTEGER NOT NULL DEFAULT 1")
+    _add_column(db, "events", "category", "TEXT NOT NULL DEFAULT 'other'")  # V2: іс-шара санаты
+    db.execute("CREATE INDEX IF NOT EXISTS idx_events_category ON events(category)")
+    _add_column(db, "users", "lang", "TEXT")  # V2: таңдаған интерфейс тілі (kk/ru/en); хаттар да осы тілде
+    # V3: ұйымдастырушыны әкімші мақұлдайды. Ескі пайдаланушылардың бәрі мақұлдалған болып саналады,
+    # сондықтан DEFAULT = 'approved'; мәндер сервис деңгейінде тексеріледі.
+    _add_column(db, "users", "approval", "TEXT NOT NULL DEFAULT 'approved'")
     db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_code ON users(public_code)")
     from .services.volunteer_service import ensure_codes  # ескі пайдаланушыларға ID береміз
     ensure_codes(db)

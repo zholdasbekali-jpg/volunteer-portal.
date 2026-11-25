@@ -4,8 +4,9 @@ from functools import wraps
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
+from . import i18n
 from .errors import ServiceError, TooManyAttempts
-from .models import ROLE_ORGANIZER, ROLE_VOLUNTEER, User
+from .models import (APPROVAL_APPROVED, ROLE_ORGANIZER, ROLE_VOLUNTEER, User, approval_of)
 from .security import is_safe_next
 from .services import auth_service, throttle_service
 
@@ -19,6 +20,9 @@ def roles_required(*roles):
         @wraps(view)
         @login_required
         def wrapped(*args, **kwargs):
+            # Мақұлданбаған ұйымдастырушы жүйеге кіре алады, бірақ іс-шараларды басқара алмайды.
+            if current_user.role == ROLE_ORGANIZER and approval_of(current_user) != APPROVAL_APPROVED:
+                return redirect(url_for("auth.pending_approval"))
             if current_user.role not in roles:
                 abort(403)
             return view(*args, **kwargs)
@@ -31,6 +35,8 @@ def home_for(user) -> str:
     if user.is_admin:
         return url_for("admin.dashboard")
     if user.is_organizer:
+        if approval_of(user) != APPROVAL_APPROVED:
+            return url_for("auth.pending_approval")
         return url_for("events.organizer_dashboard")
     return url_for("registrations.my_registrations")
 
@@ -71,7 +77,13 @@ def login():
                 raise
             throttle_service.reset(email)
             user = User(row)
+            chosen = session.get("lang")
             session.clear()          # session fixation-ге қарсы: кіргенде сессия жаңартылады
+            lang = chosen if chosen in i18n.CODES else (row["lang"] if row["lang"] in i18n.CODES else None)
+            if lang:                 # бұрын таңдалған тіл (немесе профильдегі) сақталады
+                session["lang"] = lang
+                if lang != row["lang"]:
+                    auth_service.set_user_lang(row["id"], lang)
             login_user(user)
             flash(f"Қош келдіңіз, {user.full_name}!", "success")
             nxt = request.args.get("next", "")
@@ -88,3 +100,12 @@ def logout():
     logout_user()
     flash("Сіз жүйеден шықтыңыз.", "info")
     return redirect(url_for("events.index"))
+
+
+@bp.route("/pending-approval")
+@login_required
+def pending_approval():
+    """Мақұлдауды күтіп тұрған (немесе қабылданбаған) ұйымдастырушыға арналған бет."""
+    if current_user.role != ROLE_ORGANIZER or approval_of(current_user) == APPROVAL_APPROVED:
+        return redirect(home_for(current_user))
+    return render_template("auth/pending_approval.html", approval=approval_of(current_user))

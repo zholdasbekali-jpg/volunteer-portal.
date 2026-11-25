@@ -30,7 +30,42 @@
     {% endfor %}
     </tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('calendar-plus', _('Сіз әлі ешқандай іс-шараға тіркелмегенсіз.')) }}
+  <div class="vp-card">{{ m.empty('calendar-plus', 'Сіз әлі ешқандай іс-шараға тіркелмегенсіз.') }}
     <div class="text-center pb-4"><a class="btn btn-primary" href="{{ url_for('events.catalog') }}">{{ _('Каталогқа өту') }}</a></div></div>
+{% endif %}
+
+{% if waiting %}
+  <h2 class="h5 mt-4 mb-3"><i class="bi bi-hourglass-split me-2"></i>{{ _('Менің күту тізімдерім') }}</h2>
+  <div class="vp-card"><div class="table-responsive"><table class="table vp-table align-middle">
+    <thead><tr><th>{{ _('Іс-шара') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Орны') }}</th><th class="text-center">{{ _('Кезек') }}</th><th></th></tr></thead>
+    <tbody>{% for w in waiting %}
+      <tr>
+        <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=w.event_id) }}">{{ w.title }}</a>
+          {% if w.event_status == 'cancelled' %}<span class="badge-soft b-cancelled ms-1">{{ _('Тоқтатылған') }}</span>{% endif %}</td>
+        <td class="text-nowrap">{{ w.event_date | kz_datetime }}</td>
+        <td>{{ w.city }}, {{ w.location }}</td>
+        <td class="text-center"><span class="badge-soft b-role">#{{ w.position }}</span></td>
+        <td class="text-end"><form method="post" action="{{ url_for('registrations.leave_waitlist', event_id=w.event_id) }}">
+          {{ m.csrf() }}<button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Шығу') }}</button>
+        </form></td>
+      </tr>
+    {% endfor %}</tbody></table></div></div>
+{% endif %}
+
+{% if favorites %}
+  <h2 class="h5 mt-4 mb-3"><i class="bi bi-heart-fill me-2"></i>{{ _('Менің таңдаулыларым') }}</h2>
+  <div class="vp-card"><div class="table-responsive"><table class="table vp-table align-middle">
+    <thead><tr><th>{{ _('Іс-шара') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Орны') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
+    <tbody>{% for f in favorites %}
+      <tr>
+        <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=f.event_id) }}">{{ f.title }}</a>
+          {% if f.event_status == 'cancelled' %}<span class="badge-soft b-cancelled ms-1">{{ _('Тоқтатылған') }}</span>{% endif %}</td>
+        <td class="text-nowrap">{{ f.event_date | kz_datetime }}</td>
+        <td>{{ f.city }}, {{ f.location }}</td>
+        <td class="text-end"><form method="post" action="{{ url_for('registrations.remove_favorite', event_id=f.event_id) }}">
+          {{ m.csrf() }}<button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Шығару') }}</button>
+        </form></td>
+      </tr>
+    {% endfor %}</tbody></table></div></div>
 {% endif %}
 {% endblock %}

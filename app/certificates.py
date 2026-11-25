@@ -2,6 +2,7 @@
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user
 
+from . import i18n
 from .auth import roles_required
 from .errors import ServiceError
 from .models import ROLE_VOLUNTEER
@@ -23,7 +24,8 @@ def download(registration_id):
     try:
         # QR-дағы сілтеме: PUBLIC_URL (баптауда) немесе сұрау келген мекенжай
         base = current_app.config.get("PUBLIC_URL") or request.url_root
-        cert = certificate_service.issue_certificate(current_user, registration_id, base)
+        # PDF сертификат берілген сәттегі интерфейс тілінде жасалады
+        cert = certificate_service.issue_certificate(current_user, registration_id, base, lang=i18n.current_lang())
     except ServiceError as exc:
         # Басқа біреудің немесе қатыспаған тіркелімі: 403/404/409 -> түсінікті бет
         abort(exc.status_code if exc.status_code in (403, 404) else 403)

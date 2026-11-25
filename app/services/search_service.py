@@ -3,6 +3,7 @@
 import re
 from datetime import date, timedelta
 
+from ..i18n import translate
 from ..models import CITIES
 
 # Тақырыптар: сөздің бір мүшесі табылса, бүкіл топ бойынша іздейміз (қазақша + орысша)
@@ -20,12 +21,13 @@ _WORD = re.compile(r"[\w\-]+", re.UNICODE)
 
 
 def _city_match(token: str):
-    """Септік жалғауын ескереді: «Қызылордада», «Астанада» -> бастапқы қала атауының түбірі."""
+    """Септік жалғауын ескереді: «Қызылордада», «Астанада» -> бастапқы қала атауының түбірі.
+    Қала атауы қазақша, орысша және ағылшынша жазылса да танылады («Кызылорда», «Kyzylorda»)."""
     for city in CITIES:
-        c = city.casefold()
-        stem = c[:max(4, len(c) - 2)]
-        if token == c or (len(token) >= 4 and token.startswith(stem) and len(token) <= len(c) + 5):
-            return city
+        for name in {city.casefold(), translate(city, "ru").casefold(), translate(city, "en").casefold()}:
+            stem = name[:max(4, len(name) - 2)]
+            if token == name or (len(token) >= 4 and token.startswith(stem) and len(token) <= len(name) + 5):
+                return city
     return None
 
 
@@ -46,16 +48,19 @@ def parse(q: str, today: date = None) -> dict:
         out["date_from"], out["date_to"] = a.isoformat(), b.isoformat()
         out["labels"].append(label)
 
-    for phrase, fn in (
-        ("осы апта", lambda: span(today - timedelta(days=today.weekday()),
-                                  today - timedelta(days=today.weekday()) + timedelta(days=6), "осы апта")),
-        ("осы ай", lambda: span(today.replace(day=1),
-                                (today.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1),
-                                "осы ай")),
-        ("бүгін", lambda: span(today, today, "бүгін")),
-        ("ертең", lambda: span(today + timedelta(days=1), today + timedelta(days=1), "ертең")),
+    # (сөз тіркестері қазақша, орысша, ағылшынша; белгі әрқашан қазақша — көрсеткенде аударылады)
+    for phrases, fn in (
+        (("осы апта", "на этой неделе", "эта неделя", "this week"),
+         lambda: span(today - timedelta(days=today.weekday()),
+                      today - timedelta(days=today.weekday()) + timedelta(days=6), "осы апта")),
+        (("осы ай", "в этом месяце", "этот месяц", "this month"),
+         lambda: span(today.replace(day=1),
+                      (today.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1), "осы ай")),
+        (("бүгін", "сегодня", "today"), lambda: span(today, today, "бүгін")),
+        (("ертең", "завтра", "tomorrow"), lambda: span(today + timedelta(days=1), today + timedelta(days=1), "ертең")),
     ):
-        if phrase in text:
+        phrase = next((p for p in phrases if p in text), None)
+        if phrase:
             fn()
             text = text.replace(phrase, " ")
             break

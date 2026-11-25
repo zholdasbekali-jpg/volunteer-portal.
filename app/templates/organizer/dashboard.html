@@ -2,47 +2,68 @@
 {% import "_macros.html" as m %}
 {% block title %}{{ _('Ұйымдастырушы панелі') }}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">{{ _('Барлық іс-шаралар') if current_user.is_admin else _('Менің іс-шараларым') }}</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> {{ _('Статистика') }}</a>
-    <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Жаңа іс-шара') }}</a>
+<div class="vp-page-head">
+  <div>
+    <h1 class="h3 mb-1"><i class="bi bi-calendar2-check me-2"></i>{{ _('Барлық іс-шаралар') if current_user.is_admin else _('Менің іс-шараларым') }}</h1>
+    <p class="text-muted mb-0">{{ _('Іс-шараларды басқару') }} · {{ _('деректер қорынан нақты уақытта есептеледі') }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart me-1"></i> {{ _('Статистика') }}</a>
+    <a class="btn btn-primary" href="{{ url_for('events.create') }}"><i class="bi bi-plus-lg me-1"></i> {{ _('Жаңа іс-шара') }}</a>
   </div>
 </div>
+
 <div class="row g-3 mb-4">
-  {% for value, label in [(summary.events_total, _('Іс-шара')), (summary.registrations_total, _('Тіркелім')), (summary.attended_total, _('Қатысуы расталған')), (summary.fill_rate ~ '%', _('Толу көрсеткіші'))] %}
-    <div class="col-6 col-md-3"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
+  {% for value, label, icon in [(summary.events_total, 'Іс-шара', 'calendar2-event'),
+                                (summary.registrations_total, 'Тіркелім', 'journal-text'),
+                                (summary.attended_total, 'Қатысуы расталған', 'person-check'),
+                                (summary.fill_rate ~ '%', 'Толу көрсеткіші', 'pie-chart')] %}
+    <div class="col-6 col-md-3"><div class="stat-tile vp-stat"><i class="bi bi-{{ icon }} vp-stat-icon"></i><b>{{ value }}</b><span>{{ _(label) }}</span></div></div>
   {% endfor %}
 </div>
+
+<form class="vp-filterbar mb-3" method="get" action="{{ url_for('events.organizer_dashboard') }}">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-lg-4"><label class="form-label" for="q">{{ _('Іздеу') }}</label><input class="form-control" id="q" name="q" value="{{ f.q }}" placeholder="{{ _('Атауы, қала немесе мекенжай') }}"></div>
+    <div class="col-6 col-lg-2"><label class="form-label" for="status">{{ _('Мәртебесі') }}</label><select class="form-select" id="status" name="status">{% for value, label in status_filters %}<option value="{{ value }}" {{ 'selected' if value == f.status }}>{{ _(label) }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-lg-2"><label class="form-label" for="category">{{ _('Санат') }}</label><select class="form-select" id="category" name="category"><option value="">{{ _('Барлығы') }}</option>{% for value, label in categories %}<option value="{{ value }}" {{ 'selected' if value == f.category }}>{{ _(label) }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-lg-2"><label class="form-label" for="sort">{{ _('Сұрыптау') }}</label><select class="form-select" id="sort" name="sort"><option value="date" {{ 'selected' if f.sort == 'date' }}>{{ _('Күні (жаңасы алдымен)') }}</option><option value="title" {{ 'selected' if f.sort == 'title' }}>{{ _('Атауы (А–Я)') }}</option><option value="registered" {{ 'selected' if f.sort == 'registered' }}>{{ _('Тіркелгендер саны') }}</option><option value="status" {{ 'selected' if f.sort == 'status' }}>{{ _('Мәртебесі') }}</option></select></div>
+    <div class="col-12 col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.q or f.status or f.category or f.sort != 'date' %}<a class="btn btn-outline-secondary" href="{{ url_for('events.organizer_dashboard') }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+  </div>
+</form>
+<div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ events | length }}</b></div>
+
 {% if events %}
-<div class="vp-card"><div class="table-responsive"><table class="table vp-table">
-  <thead><tr><th>{{ _('Атауы') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Мәртебесі') }}</th><th>{{ _('Тіркелген') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
+<div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table">
+  <thead><tr><th>{{ _('Атауы') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Санат') }}</th><th>{{ _('Мәртебесі') }}</th><th>{{ _('Тіркелген') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
   <tbody>
   {% for e in events %}
     <tr>
       <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a>
-        {% if current_user.is_admin %}<div class="small text-muted">{{ e.organizer_name }}</div>{% endif %}</td>
+        <div class="small text-muted">{% if current_user.is_admin %}{{ e.organizer_name }} · {% endif %}<i class="bi bi-geo-alt"></i> {{ e.city }}, {{ e.location }}</div></td>
       <td class="text-nowrap">{{ e.event_date | kz_datetime }}</td>
+      <td>{{ m.category_badge(e.category) }}</td>
       <td>{{ m.event_badge(e.status) }}</td>
-      <td>{{ e.registered_count }} / {{ e.capacity }} <span class="text-muted small">{{ _('(қатысты:') }} {{ e.attended_count }})</span></td>
-      <td class="text-end text-nowrap">
-        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=e.id) }}" title="{{ _('Қатысушылар') }}"><i class="bi bi-people"></i></a>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('events.edit', event_id=e.id) }}" title="{{ _('Өңдеу') }}"><i class="bi bi-pencil"></i></a>
+      <td style="min-width:150px">{{ e.registered_count }} / {{ e.capacity }} <span class="text-muted small">({{ _('қатысты:') }} {{ e.attended_count }})</span><div class="spots mt-1"><span style="width: {{ [((e.registered_count * 100 / e.capacity) | round | int), 100] | min }}%"></span></div></td>
+      <td class="text-end"><div class="vp-actions">
+        <a class="btn btn-outline-primary btn-sm vp-icon-btn" href="{{ url_for('events.participants', event_id=e.id) }}" title="{{ _('Қатысушылар') }}" aria-label="{{ _('Қатысушылар') }}"><i class="bi bi-people"></i></a>
+        <a class="btn btn-outline-success btn-sm vp-icon-btn" href="{{ url_for('checkin.screen', event_id=e.id) }}" title="{{ _('QR арқылы белгілеу') }}" aria-label="{{ _('QR арқылы белгілеу') }}"><i class="bi bi-qr-code"></i></a>
+        <a class="btn btn-outline-secondary btn-sm vp-icon-btn" href="{{ url_for('events.edit', event_id=e.id) }}" title="{{ _('Өңдеу') }}" aria-label="{{ _('Өңдеу') }}"><i class="bi bi-pencil"></i></a>
         {% if e.status == 'published' %}
           <form method="post" class="d-inline" action="{{ url_for('events.cancel', event_id=e.id) }}" data-confirm="{{ _('Іс-шараны тоқтатуға сенімдісіз бе? Тіркелу жабылады.') }}">
-            {{ m.csrf() }}<button class="btn btn-outline-warning btn-sm" title="{{ _('Тоқтату') }}" type="submit"><i class="bi bi-pause-circle"></i></button></form>
+            {{ m.csrf() }}<button class="btn btn-outline-warning btn-sm vp-icon-btn" title="{{ _('Тоқтату') }}" aria-label="{{ _('Тоқтату') }}" type="submit"><i class="bi bi-pause-circle"></i></button></form>
         {% else %}
           <form method="post" class="d-inline" action="{{ url_for('events.restore', event_id=e.id) }}">
-            {{ m.csrf() }}<button class="btn btn-outline-success btn-sm" title="{{ _('Қайта жариялау') }}" type="submit"><i class="bi bi-play-circle"></i></button></form>
+            {{ m.csrf() }}<button class="btn btn-outline-success btn-sm vp-icon-btn" title="{{ _('Қайта жариялау') }}" aria-label="{{ _('Қайта жариялау') }}" type="submit"><i class="bi bi-play-circle"></i></button></form>
         {% endif %}
         <form method="post" class="d-inline" action="{{ url_for('events.delete', event_id=e.id) }}" data-confirm="{{ _('Іс-шара және оның барлық тіркелімдері түпкілікті жойылады. Жалғастырасыз ба?') }}">
-          {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" title="{{ _('Жою') }}" type="submit"><i class="bi bi-trash"></i></button></form>
-      </td>
+          {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm vp-icon-btn" title="{{ _('Жою') }}" aria-label="{{ _('Жою') }}" type="submit"><i class="bi bi-trash"></i></button></form>
+      </div></td>
     </tr>
   {% endfor %}
   </tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('calendar-plus', _('Сізде әлі іс-шара жоқ.')) }}
+  <div class="vp-card">{{ m.empty('search', 'Іздеу нәтижесі жоқ. Сүзгілерді өзгертіп көріңіз.') }}
     <div class="text-center pb-4"><a class="btn btn-primary" href="{{ url_for('events.create') }}">{{ _('Алғашқы іс-шараны құру') }}</a></div></div>
 {% endif %}
 {% endblock %}

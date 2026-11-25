@@ -2,71 +2,157 @@
 {% import "_macros.html" as m %}
 {% block title %}{{ _('Әкімші панелі') }}{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">{{ _('Әкімші панелі') }}</h1>
+<div class="vp-page-head">
+  <div>
+    <h1 class="h3 mb-1"><i class="bi bi-person-gear me-2"></i>{{ _('Әкімші панелі') }}</h1>
+    <p class="text-muted mb-0">{{ _('Платформаны басқару') }} · {{ _('деректер қорынан нақты уақытта есептеледі') }}</p>
+  </div>
+  <a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart me-1"></i> {{ _('Толық статистика мен графиктер') }}</a>
+</div>
+
 <div class="row g-3 mb-4">
-  {% for value, label in [(summary.events_total, _('Іс-шара')), (summary.volunteers_total, _('Ерікті')), (summary.registrations_total, _('Тіркелім')), (summary.attended_total, _('Қатысуы расталған')), (summary.fill_rate ~ '%', _('Толу көрсеткіші'))] %}
-    <div class="col-6 col-md-4 col-xl"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
+  {% for value, label, icon in [(summary.events_total, 'Іс-шара', 'calendar2-event'),
+                                (summary.volunteers_total, 'Ерікті', 'people'),
+                                (summary.registrations_total, 'Тіркелім', 'journal-text'),
+                                (summary.attended_total, 'Қатысуы расталған', 'person-check'),
+                                (summary.fill_rate ~ '%', 'Толу көрсеткіші', 'pie-chart')] %}
+    <div class="col-6 col-md-4 col-xl"><div class="stat-tile vp-stat"><i class="bi bi-{{ icon }} vp-stat-icon"></i><b>{{ value }}</b><span>{{ _(label) }}</span></div></div>
   {% endfor %}
 </div>
 
-<ul class="nav nav-pills mb-3 gap-1" role="tablist">
-  <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#users" type="button">{{ _('Пайдаланушылар (') }}{{ users | length }})</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#events" type="button">{{ _('Іс-шаралар (') }}{{ events | length }})</button></li>
-  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#regs" type="button">{{ _('Тіркелімдер (') }}{{ regs | length }})</button></li>
+<ul class="nav nav-pills vp-manage-tabs mb-3 gap-1" role="tablist">
+  <li class="nav-item"><button class="nav-link {{ 'active' if tab == 'users' }}" type="button" role="tab" data-bs-toggle="pill" data-bs-target="#users" aria-selected="{{ 'true' if tab == 'users' else 'false' }}"><i class="bi bi-people me-1"></i>{{ _('Пайдаланушылар') }} <span class="vp-tab-count">{{ users | length }}</span></button></li>
+  <li class="nav-item"><button class="nav-link {{ 'active' if tab == 'events' }}" type="button" role="tab" data-bs-toggle="pill" data-bs-target="#events" aria-selected="{{ 'true' if tab == 'events' else 'false' }}"><i class="bi bi-calendar2-event me-1"></i>{{ _('Іс-шаралар') }} <span class="vp-tab-count">{{ events | length }}</span></button></li>
+  <li class="nav-item"><button class="nav-link {{ 'active' if tab == 'regs' }}" type="button" role="tab" data-bs-toggle="pill" data-bs-target="#regs" aria-selected="{{ 'true' if tab == 'regs' else 'false' }}"><i class="bi bi-journal-text me-1"></i>{{ _('Тіркелімдер') }} <span class="vp-tab-count">{{ regs | length }}</span></button></li>
+  <li class="nav-item"><button class="nav-link {{ 'active' if tab == 'audit' }}" type="button" role="tab" data-bs-toggle="pill" data-bs-target="#audit" aria-selected="{{ 'true' if tab == 'audit' else 'false' }}"><i class="bi bi-clock-history me-1"></i>{{ _('Журнал') }} <span class="vp-tab-count">{{ audit | length }}</span></button></li>
 </ul>
+
 <div class="tab-content">
-  <div class="tab-pane fade show active" id="users">
-    <div class="vp-card"><div class="table-responsive"><table class="table vp-table">
-      <thead><tr><th>#</th><th>{{ _('Аты-жөні') }}</th><th>Email</th><th>{{ _('Рөлі') }}</th><th>{{ _('Тіркелген күні') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
+  <div class="tab-pane fade {{ 'show active' if tab == 'users' }}" id="users" role="tabpanel">
+    <form class="vp-filterbar mb-3" method="get" action="{{ url_for('admin.dashboard') }}#users">
+      <input type="hidden" name="tab" value="users">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-4"><label class="form-label" for="u_q">{{ _('Іздеу') }}</label><input class="form-control" id="u_q" name="u_q" value="{{ f.u_q }}" placeholder="{{ _('Аты-жөні немесе email') }}"></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="u_role">{{ _('Рөлі') }}</label><select class="form-select" id="u_role" name="u_role"><option value="">{{ _('Барлығы') }}</option>{% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if value == f.u_role }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="u_approval">{{ _('Мақұлдау') }}</label><select class="form-select" id="u_approval" name="u_approval"><option value="">{{ _('Барлығы') }}</option>{% for value, label in approvals %}<option value="{{ value }}" {{ 'selected' if value == f.u_approval }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="u_sort">{{ _('Сұрыптау') }}</label><select class="form-select" id="u_sort" name="u_sort"><option value="id" {{ 'selected' if f.u_sort == 'id' }}>ID</option><option value="name" {{ 'selected' if f.u_sort == 'name' }}>{{ _('Аты-жөні (А–Я)') }}</option><option value="role" {{ 'selected' if f.u_sort == 'role' }}>{{ _('Рөлі') }}</option><option value="date" {{ 'selected' if f.u_sort == 'date' }}>{{ _('Тіркелген күні') }}</option></select></div>
+        <div class="col-12 col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.u_q or f.u_role or f.u_approval or f.u_sort != 'id' %}<a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard', tab='users') }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+      </div>
+    </form>
+    <div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ users | length }}</b></div>
+    <div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table">
+      <thead><tr><th>#</th><th>{{ _('Аты-жөні') }}</th><th>{{ _('Рөлі') }}</th><th>{{ _('Мақұлдау') }}</th><th class="text-center">{{ _('Іс-шара') }}</th><th class="text-center">{{ _('Тіркелім') }}</th><th>{{ _('Тіркелген күні') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
       <tbody>{% for u in users %}
         <tr>
-          <td>{{ u.id }}</td><td class="fw-semibold">{{ u.full_name }}</td><td>{{ u.email }}</td>
+          <td class="text-muted">{{ u.id }}</td>
+          <td class="fw-semibold">{{ u.full_name }}<div class="small text-muted fw-normal">{{ u.email }}</div></td>
           <td>
-            {% if u.id == current_user.id %}<span class="badge-soft b-role">{{ ROLE_LABELS[u.role] }}</span>
+            {% if u.id == current_user.id %}<span class="badge-soft b-role">{{ _(ROLE_LABELS[u.role]) }}</span>
             {% else %}
-            <form method="post" class="d-flex gap-1" action="{{ url_for('admin.change_role', user_id=u.id) }}">
+            <form method="post" class="vp-inline-form" action="{{ url_for('admin.change_role', user_id=u.id) }}">
               {{ m.csrf() }}
-              <select class="form-select form-select-sm" name="role" aria-label="{{ _('Рөл') }}" style="min-width:140px">
-                {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if value == u.role }}>{{ label }}</option>{% endfor %}
+              <select class="form-select form-select-sm" name="role" aria-label="{{ _('Рөлі') }}">
+                {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if value == u.role }}>{{ _(label) }}</option>{% endfor %}
               </select>
-              <button class="btn btn-outline-primary btn-sm" type="submit">OK</button>
+              <button class="btn btn-outline-primary btn-sm" type="submit" title="{{ _('Сақтау') }}"><i class="bi bi-check2"></i></button>
             </form>{% endif %}
           </td>
+          <td>
+            {% if u.role == organizer_role %}
+              <span class="badge-soft {{ 'b-published' if u.approval == 'approved' else ('b-cancelled' if u.approval == 'rejected' else 'b-pending') }}">{{ _(approval_labels[u.approval]) }}</span>
+              {% if u.approval != 'approved' %}
+                <form method="post" class="d-inline" action="{{ url_for('admin.set_approval', user_id=u.id) }}">
+                  {{ m.csrf() }}<input type="hidden" name="approval" value="approved">
+                  <button class="btn btn-outline-success btn-sm mt-1" type="submit" title="{{ _('Мақұлдау') }}"><i class="bi bi-check2"></i></button>
+                </form>
+              {% endif %}
+              {% if u.approval == 'pending' %}
+                <form method="post" class="d-inline" action="{{ url_for('admin.set_approval', user_id=u.id) }}">
+                  {{ m.csrf() }}<input type="hidden" name="approval" value="rejected">
+                  <button class="btn btn-outline-danger btn-sm mt-1" type="submit" title="{{ _('Қабылдамау') }}"><i class="bi bi-x-lg"></i></button>
+                </form>
+              {% endif %}
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td class="text-center">{{ u.event_count }}</td><td class="text-center">{{ u.reg_count }}</td>
           <td class="text-nowrap">{{ u.created_at[:16] | kz_datetime }}</td>
           <td class="text-end">
             {% if u.id != current_user.id %}
             <form method="post" class="d-inline" action="{{ url_for('admin.delete_user', user_id=u.id) }}" data-confirm="{{ _('Пайдаланушы және оған байланысты барлық деректер жойылады. Жалғастырасыз ба?') }}">
-              {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit" title="{{ _('Жою') }}"><i class="bi bi-trash"></i></button></form>
+              {{ m.csrf() }}<button class="btn btn-outline-danger btn-sm vp-icon-btn" type="submit" title="{{ _('Жою') }}" aria-label="{{ _('Жою') }}"><i class="bi bi-trash"></i></button></form>
             {% endif %}
           </td>
-        </tr>{% endfor %}</tbody></table></div></div>
+        </tr>{% else %}<tr><td colspan="8">{{ m.empty('search', 'Іздеу нәтижесі жоқ. Сүзгілерді өзгертіп көріңіз.') }}</td></tr>{% endfor %}</tbody></table></div></div>
   </div>
-  <div class="tab-pane fade" id="events">
-    <div class="vp-card"><div class="table-responsive"><table class="table vp-table">
-      <thead><tr><th>{{ _('Атауы') }}</th><th>{{ _('Ұйымдастырушы') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Мәртебесі') }}</th><th>{{ _('Тіркелген') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
+
+  <div class="tab-pane fade {{ 'show active' if tab == 'events' }}" id="events" role="tabpanel">
+    <form class="vp-filterbar mb-3" method="get" action="{{ url_for('admin.dashboard') }}#events">
+      <input type="hidden" name="tab" value="events">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-4"><label class="form-label" for="e_q">{{ _('Іздеу') }}</label><input class="form-control" id="e_q" name="e_q" value="{{ f.e_q }}" placeholder="{{ _('Атауы, қала немесе ұйымдастырушы') }}"></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="e_status">{{ _('Мәртебесі') }}</label><select class="form-select" id="e_status" name="e_status">{% for value, label in status_filters %}<option value="{{ value }}" {{ 'selected' if value == f.e_status }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="e_category">{{ _('Санат') }}</label><select class="form-select" id="e_category" name="e_category"><option value="">{{ _('Барлығы') }}</option>{% for value, label in categories %}<option value="{{ value }}" {{ 'selected' if value == f.e_category }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="e_sort">{{ _('Сұрыптау') }}</label><select class="form-select" id="e_sort" name="e_sort"><option value="date" {{ 'selected' if f.e_sort == 'date' }}>{{ _('Күні (жаңасы алдымен)') }}</option><option value="title" {{ 'selected' if f.e_sort == 'title' }}>{{ _('Атауы (А–Я)') }}</option><option value="registered" {{ 'selected' if f.e_sort == 'registered' }}>{{ _('Тіркелгендер саны') }}</option><option value="status" {{ 'selected' if f.e_sort == 'status' }}>{{ _('Мәртебесі') }}</option></select></div>
+        <div class="col-12 col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.e_q or f.e_status or f.e_category or f.e_sort != 'date' %}<a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard', tab='events') }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+      </div>
+    </form>
+    <div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ events | length }}</b></div>
+    <div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table">
+      <thead><tr><th>{{ _('Атауы') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Санат') }}</th><th>{{ _('Мәртебесі') }}</th><th>{{ _('Тіркелген') }}</th><th class="text-end">{{ _('Әрекеттер') }}</th></tr></thead>
       <tbody>{% for e in events %}
-        <tr><td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a></td>
-          <td>{{ e.organizer_name }}</td><td class="text-nowrap">{{ e.event_date | kz_datetime }}</td><td>{{ m.event_badge(e.status) }}</td>
-          <td>{{ e.registered_count }} / {{ e.capacity }}</td>
-          <td class="text-end text-nowrap">
-            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.participants', event_id=e.id) }}" title="{{ _('Қатысушылар') }}"><i class="bi bi-people"></i></a>
-            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('events.edit', event_id=e.id) }}" title="{{ _('Өңдеу') }}"><i class="bi bi-pencil"></i></a>
+        <tr><td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.title }}</a><div class="small text-muted">{{ e.organizer_name }} · {{ e.city }}</div></td>
+          <td class="text-nowrap">{{ e.event_date | kz_datetime }}</td><td>{{ m.category_badge(e.category) }}</td><td>{{ m.event_badge(e.status) }}</td>
+          <td style="min-width:130px">{{ e.registered_count }} / {{ e.capacity }}<div class="spots mt-1"><span style="width: {{ [((e.registered_count * 100 / e.capacity) | round | int), 100] | min }}%"></span></div></td>
+          <td class="text-end"><div class="vp-actions">
+            <a class="btn btn-outline-primary btn-sm vp-icon-btn" href="{{ url_for('events.participants', event_id=e.id) }}" title="{{ _('Қатысушылар') }}" aria-label="{{ _('Қатысушылар') }}"><i class="bi bi-people"></i></a>
+            <a class="btn btn-outline-secondary btn-sm vp-icon-btn" href="{{ url_for('events.edit', event_id=e.id) }}" title="{{ _('Өңдеу') }}" aria-label="{{ _('Өңдеу') }}"><i class="bi bi-pencil"></i></a>
             {% if e.status == 'published' %}
-            <form method="post" class="d-inline" action="{{ url_for('events.cancel', event_id=e.id) }}" data-confirm="{{ _('Іс-шараны тоқтатасыз ба?') }}">{{ m.csrf() }}<button class="btn btn-outline-warning btn-sm" type="submit" title="{{ _('Тоқтату') }}"><i class="bi bi-pause-circle"></i></button></form>
+            <form method="post" class="d-inline" action="{{ url_for('events.cancel', event_id=e.id) }}" data-confirm="{{ _('Іс-шараны тоқтатасыз ба?') }}">{{ m.csrf() }}<button class="btn btn-outline-warning btn-sm vp-icon-btn" type="submit" title="{{ _('Тоқтату') }}" aria-label="{{ _('Тоқтату') }}"><i class="bi bi-pause-circle"></i></button></form>
             {% else %}
-            <form method="post" class="d-inline" action="{{ url_for('events.restore', event_id=e.id) }}">{{ m.csrf() }}<button class="btn btn-outline-success btn-sm" type="submit" title="{{ _('Қайта жариялау') }}"><i class="bi bi-play-circle"></i></button></form>
+            <form method="post" class="d-inline" action="{{ url_for('events.restore', event_id=e.id) }}">{{ m.csrf() }}<button class="btn btn-outline-success btn-sm vp-icon-btn" type="submit" title="{{ _('Қайта жариялау') }}" aria-label="{{ _('Қайта жариялау') }}"><i class="bi bi-play-circle"></i></button></form>
             {% endif %}
-            <form method="post" class="d-inline" action="{{ url_for('events.delete', event_id=e.id) }}" data-confirm="{{ _('Іс-шара және тіркелімдері жойылады. Жалғастырасыз ба?') }}">{{ m.csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit" title="{{ _('Жою') }}"><i class="bi bi-trash"></i></button></form>
-          </td></tr>{% else %}<tr><td colspan="6">{{ m.empty('calendar-x', _('Іс-шаралар жоқ.')) }}</td></tr>{% endfor %}</tbody></table></div></div>
+            <form method="post" class="d-inline" action="{{ url_for('events.delete', event_id=e.id) }}" data-confirm="{{ _('Іс-шара және тіркелімдері жойылады. Жалғастырасыз ба?') }}">{{ m.csrf() }}<button class="btn btn-outline-danger btn-sm vp-icon-btn" type="submit" title="{{ _('Жою') }}" aria-label="{{ _('Жою') }}"><i class="bi bi-trash"></i></button></form>
+          </div></td></tr>{% else %}<tr><td colspan="6">{{ m.empty('search', 'Іздеу нәтижесі жоқ. Сүзгілерді өзгертіп көріңіз.') }}</td></tr>{% endfor %}</tbody></table></div></div>
   </div>
-  <div class="tab-pane fade" id="regs">
-    <div class="vp-card"><div class="table-responsive"><table class="table vp-table">
+
+  <div class="tab-pane fade {{ 'show active' if tab == 'regs' }}" id="regs" role="tabpanel">
+    <form class="vp-filterbar mb-3" method="get" action="{{ url_for('admin.dashboard') }}#regs">
+      <input type="hidden" name="tab" value="regs">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-5"><label class="form-label" for="r_q">{{ _('Іздеу') }}</label><input class="form-control" id="r_q" name="r_q" value="{{ f.r_q }}" placeholder="{{ _('Ерікті, email немесе іс-шара') }}"></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="r_status">{{ _('Мәртебесі') }}</label><select class="form-select" id="r_status" name="r_status"><option value="">{{ _('Барлығы') }}</option>{% for value, label in reg_statuses %}<option value="{{ value }}" {{ 'selected' if value == f.r_status }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-lg-2"><label class="form-label" for="r_sort">{{ _('Сұрыптау') }}</label><select class="form-select" id="r_sort" name="r_sort"><option value="id">ID</option><option value="name" {{ 'selected' if f.r_sort == 'name' }}>{{ _('Ерікті') }}</option><option value="date" {{ 'selected' if f.r_sort == 'date' }}>{{ _('Тіркелген күні') }}</option><option value="status" {{ 'selected' if f.r_sort == 'status' }}>{{ _('Мәртебесі') }}</option></select></div>
+        <div class="col-12 col-lg-3 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.r_q or f.r_status or f.r_sort != 'id' %}<a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard', tab='regs') }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+      </div>
+    </form>
+    <div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ regs | length }}</b></div>
+    <div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table">
       <thead><tr><th>#</th><th>{{ _('Ерікті') }}</th><th>{{ _('Іс-шара') }}</th><th>{{ _('Күні') }}</th><th>{{ _('Тіркелген') }}</th><th>{{ _('Мәртебесі') }}</th></tr></thead>
       <tbody>{% for r in regs %}
-        <tr><td>{{ r.id }}</td><td>{{ r.full_name }}<div class="small text-muted">{{ r.email }}</div></td><td>{{ r.title }}</td>
+        <tr><td class="text-muted">{{ r.id }}</td><td>{{ r.full_name }}<div class="small text-muted">{{ r.email }}</div></td><td>{{ r.title }}</td>
           <td class="text-nowrap">{{ r.event_date | kz_date }}</td><td class="text-nowrap">{{ r.registered_at[:16] | kz_datetime }}</td><td>{{ m.reg_badge(r.status) }}</td></tr>
-      {% else %}<tr><td colspan="6">{{ m.empty('journal', _('Тіркелімдер жоқ.')) }}</td></tr>{% endfor %}</tbody></table></div></div>
+      {% else %}<tr><td colspan="6">{{ m.empty('search', 'Іздеу нәтижесі жоқ. Сүзгілерді өзгертіп көріңіз.') }}</td></tr>{% endfor %}</tbody></table></div></div>
+  </div>
+
+  <div class="tab-pane fade {{ 'show active' if tab == 'audit' }}" id="audit" role="tabpanel">
+    <form class="vp-filterbar mb-3" method="get" action="{{ url_for('admin.dashboard') }}#audit">
+      <input type="hidden" name="tab" value="audit">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-5"><label class="form-label" for="a_q">{{ _('Іздеу') }}</label><input class="form-control" id="a_q" name="a_q" value="{{ f.a_q }}" placeholder="{{ _('Әрекет, нысан немесе мәліметтер') }}"></div>
+        <div class="col-12 col-lg-5"><label class="form-label" for="a_action">{{ _('Әрекет түрі') }}</label><select class="form-select" id="a_action" name="a_action"><option value="">{{ _('Барлығы') }}</option>{% for value, label in audit_actions %}<option value="{{ value }}" {{ 'selected' if value == f.a_action }}>{{ _(label) }}</option>{% endfor %}</select></div>
+        <div class="col-12 col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel me-1"></i>{{ _('Іздеу') }}</button>{% if f.a_q or f.a_action %}<a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard', tab='audit') }}" aria-label="{{ _('Сүзгіні тазалау') }}" title="{{ _('Тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}</div>
+      </div>
+    </form>
+    <div class="vp-result-line">{{ _('Нәтиже саны') }}: <b>{{ audit | length }}</b></div>
+    <div class="vp-card"><div class="table-responsive"><table class="table vp-table vp-manage-table">
+      <thead><tr><th>{{ _('Уақыт') }}</th><th>{{ _('Әкімші') }}</th><th>{{ _('Әрекет') }}</th><th>{{ _('Нысан') }}</th><th>{{ _('Мәліметтер') }}</th></tr></thead>
+      <tbody>{% for a in audit %}
+        <tr><td class="text-nowrap">{{ a.created_at[:16] | kz_datetime }}</td>
+          <td>{{ a.actor_name or _('Жүйе') }}</td>
+          <td>{{ _(audit_labels.get(a.action, a.action)) }}</td>
+          <td>{{ a.target_type }}{% if a.target_id %} #{{ a.target_id }}{% endif %}</td>
+          <td class="small text-muted">{{ a.details }}</td></tr>
+      {% else %}<tr><td colspan="5">{{ m.empty('clock-history', 'Журналда жазба жоқ.') }}</td></tr>{% endfor %}</tbody></table></div></div>
   </div>
 </div>
-<div class="mt-4"><a class="btn btn-outline-primary" href="{{ url_for('statistics.page') }}"><i class="bi bi-bar-chart"></i> {{ _('Толық статистика мен графиктер') }}</a></div>
 {% endblock %}

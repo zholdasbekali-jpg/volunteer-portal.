@@ -5,7 +5,7 @@
   <h1 class="h3 mb-0"><i class="bi bi-trophy"></i> {{ _('Рейтинг') }}</h1>
   <div class="btn-group" role="group" aria-label="{{ _('Кезең') }}">
     {% for value, label in periods %}
-      <a class="btn btn-sm {{ 'btn-primary' if value == period else 'btn-outline-primary' }}" href="{{ url_for('volunteers.rating', period=value) }}">{{ label }}</a>
+      <a class="btn btn-sm {{ 'btn-primary' if value == period else 'btn-outline-primary' }}" href="{{ url_for('volunteers.rating', period=value) }}">{{ _(label) }}</a>
     {% endfor %}
   </div>
 </div>
@@ -18,7 +18,7 @@
         <thead><tr><th>#</th><th>{{ _('Ерікті') }}</th><th class="text-end">{{ _('Сағат') }}</th><th class="text-end">{{ _('Іс-шара') }}</th></tr></thead>
         <tbody>{% for v in volunteers %}<tr>
           <td>{{ v.place }}</td>
-          <td>{% if v.code %}<a href="{{ url_for('volunteers.public_card', code=v.code) }}">{{ v.name }}</a>{% else %}<span class="text-muted">{{ v.name }}</span>{% endif %}</td>
+          <td>{% if v.code %}<a href="{{ url_for('volunteers.public_card', code=v.code) }}">{{ _(v.name) }}</a>{% else %}<span class="text-muted">{{ _(v.name) }}</span>{% endif %}</td>
           <td class="text-end">{{ v.hours }}</td><td class="text-end">{{ v.events }}</td></tr>{% endfor %}</tbody></table></div>
     {% else %}<p class="text-muted mb-0">{{ _('Әзірге деректер жоқ.') }}</p>{% endif %}
     </div>

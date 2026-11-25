@@ -6,7 +6,7 @@
   <div class="vp-card vp-card-pad text-center">
   {% if error %}
     <h1 class="h4">{{ _('Белгілеу мүмкін емес') }}</h1>
-    <div class="alert alert-danger mt-3">{{ error }}</div>
+    <div class="alert alert-danger mt-3">{{ _(error) }}</div>
     <a class="btn btn-primary" href="{{ url_for('certificates.scan') }}"><i class="bi bi-qr-code-scan"></i> {{ _('Қайта сканерлеу') }}</a>
   {% else %}
     <h1 class="h4 mb-1">{{ _('Қатысуыңызды растаңыз') }}</h1>

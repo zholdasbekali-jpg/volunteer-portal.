@@ -7,6 +7,16 @@ from ..errors import Conflict, NotFound, PermissionDenied, ValidationError
 from ..models import (EVENT_PUBLISHED, REG_ABSENT, REG_ATTENDED, REG_PENDING,
                       REG_STATUSES, ROLE_ADMIN, ROLE_VOLUNTEER)
 from .event_service import DATE_FMT, can_manage
+from .waitlist_service import promote_next_in
+
+
+class CancelResult(list):
+    """Бұрынғыдай жойылған PDF жолдарының тізімі, бірақ қосымша: кезектен өткен адам."""
+
+    def __init__(self, paths=(), promoted=None, event_id=None):
+        super().__init__(paths)
+        self.promoted = promoted
+        self.event_id = event_id
 
 
 def register(actor, event_id: int) -> int:
@@ -55,7 +65,9 @@ def cancel_registration(actor, registration_id: int) -> list:
         if event["event_date"] <= datetime.now().strftime(DATE_FMT):
             raise Conflict("Өтіп кеткен іс-шарадан бас тарту мүмкін емес.")
         db.execute("DELETE FROM registrations WHERE id = ?", (registration_id,))
-    return []
+        # Орын босады: күту тізіміндегі бірінші адамды осы транзакцияда тіркейміз.
+        promoted = promote_next_in(db, reg["event_id"], exclude_user_id=actor["id"])
+    return CancelResult([], promoted=promoted, event_id=reg["event_id"])
 
 
 def set_attendance(actor, registration_id: int, status: str) -> list:
@@ -99,6 +111,11 @@ def list_for_user(user_id: int):
 def get_user_registration(user_id: int, event_id: int):
     return get_db().execute("SELECT * FROM registrations WHERE user_id = ? AND event_id = ?",
                             (user_id, event_id)).fetchone()
+
+
+def get_registration(registration_id: int):
+    """Бір тіркелім (мысалы, бас тарту кезінде іс-шара мен еріктіні анықтау үшін)."""
+    return get_db().execute("SELECT * FROM registrations WHERE id = ?", (registration_id,)).fetchone()
 
 
 def list_for_event(actor, event_id: int):

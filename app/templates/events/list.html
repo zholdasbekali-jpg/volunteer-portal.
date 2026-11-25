@@ -23,26 +23,34 @@
     <div class="col-sm-6 col-lg-2">
       <label class="form-label" for="status">{{ _('Мәртебесі') }}</label>
       <select class="form-select" id="status" name="status">
-        {% for value, label in status_filters %}<option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>{% endfor %}
+        {% for value, label in status_filters %}<option value="{{ value }}" {{ 'selected' if value == status }}>{{ _(label) }}</option>{% endfor %}
       </select>
     </div>
     <div class="col-lg-3 d-flex gap-2">
+      <input type="hidden" name="category" value="{{ category }}">
       <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-funnel"></i> {{ _('Іздеу') }}</button>
-      {% if q or date or status or city %}<a class="btn btn-outline-secondary" href="{{ url_for('events.catalog') }}" title="{{ _('Тазалау') }}" aria-label="{{ _('Сүзгіні тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}
+      {% if q or date or status or city or category %}<a class="btn btn-outline-secondary" href="{{ url_for('events.catalog') }}" title="{{ _('Тазалау') }}" aria-label="{{ _('Сүзгіні тазалау') }}"><i class="bi bi-x-lg"></i></a>{% endif %}
     </div>
   </div>
 </form>
 
+<div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="{{ _('Іс-шара санаттары') }}">
+  <a class="btn btn-sm {{ 'btn-outline-primary' if category else 'btn-primary' }}" href="{{ url_for('events.catalog', q=q or None, city=city or None, date=date or None, status=status or None) }}">{{ _('Барлығы') }}</a>
+  {% for code, label in categories %}
+    <a class="btn btn-sm {{ 'btn-primary' if code == category else 'btn-outline-primary' }}" href="{{ url_for('events.catalog', q=q or None, city=city or None, date=date or None, status=status or None, category=code) }}">{{ _(label) }}</a>
+  {% endfor %}
+</div>
+
 {% if hints %}
   <p class="small text-muted mb-3"><i class="bi bi-lightbulb"></i> {{ _('Түсінген іздеу:') }}
-    {% for h in hints %}<span class="badge-soft b-role me-1 text-nowrap d-inline-block mb-1">{{ h }}</span>{% endfor %}</p>
+    {% for h in hints %}<span class="badge-soft b-role me-1 text-nowrap d-inline-block mb-1">{{ _(h) }}</span>{% endfor %}</p>
 {% endif %}
 {% if total == 0 %}
-  <div class="vp-card">{{ m.empty('search', _('Іс-шаралар табылмады. Іздеу шарттарын өзгертіп көріңіз.')) }}</div>
+  <div class="vp-card">{{ m.empty('search', 'Іс-шаралар табылмады. Іздеу шарттарын өзгертіп көріңіз.') }}</div>
 {% else %}
   {% for title, items in groups %}
     {% if items %}
-      <h2 class="h5 mb-3 mt-4">{{ title }} <span class="text-muted fw-normal">({{ items | length }})</span></h2>
+      <h2 class="h5 mb-3 mt-4">{{ _(title) }} <span class="text-muted fw-normal">({{ items | length }})</span></h2>
       <div class="row g-3">
         {% for e in items %}<div class="col-md-6 col-lg-4">{{ m.event_card(e) }}</div>{% endfor %}
       </div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}{{ _('QR арқылы белгілеу ·') }} {{ event.title }}{% endblock %}
+{% block title %}{{ _('QR арқылы белгілеу') }} · {{ event.title }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small">
   <li class="breadcrumb-item"><a href="{{ url_for('events.organizer_dashboard') }}">{{ _('Панель') }}</a></li>
@@ -14,7 +14,7 @@
     <p class="text-muted">{{ _('Еріктілер өз телефонымен осы QR-ды сканерлеп, қатысуын өздері белгілейді.') }}</p>
     <img id="checkin-qr" class="checkin-qr" src="{{ url_for('checkin.qr_svg', event_id=event.id) }}" alt="{{ _('Қатысуды белгілеу QR-коды') }}" width="360" height="360">
     <div class="checkin-bar mt-3"><div id="checkin-bar-fill"></div></div>
-    <div class="small text-muted mt-2">{{ _('QR әр') }} {{ step }} {{ _('секунд сайын жаңарады: суретке түсіріп жіберу көмектеспейді.') }}</div>
+    <div class="small text-muted mt-2">{{ _('QR әр {n} секунд сайын жаңарады: суретке түсіріп жіберу көмектеспейді.', n=step) }}</div>
     <div class="checkin-count mt-4">
       <div class="num"><span id="checkin-attended">{{ attended }}</span> / <span id="checkin-total">{{ total }}</span></div>
       <div class="small text-muted">{{ _('қатысты / тіркелген') }}</div>

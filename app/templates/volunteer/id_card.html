@@ -15,8 +15,8 @@
     <div class="flex-grow-1">
       <div class="vid-label">QAMQOR · Volunteer ID</div>
       <h1 class="h3 mb-1">{{ card.name }}</h1>
-      <span class="badge-soft b-role">{{ card.level }}</span>
-      <span class="small text-muted ms-2">{{ _('Порталда:') }} {{ card.since | kz_date }} {{ _('бастап') }}</span>
+      <span class="badge-soft b-role">{{ _(card.level) }}</span>
+      <span class="small text-muted ms-2">{{ _('Порталда: {date} бастап', date=card.since | kz_date) }}</span>
     </div>
     <img class="vid-qr" src="{{ url_for('volunteers.qr', code=card.code) }}" alt="{{ _('Профильге апаратын QR') }}" width="140" height="140">
   </div>
@@ -35,8 +35,8 @@
     <div class="col-6 col-md-4">
       <div class="ach {{ 'ach-on' if a.earned else 'ach-off' }}">
         <i class="bi {{ a.icon }}"></i>
-        <b>{{ a.title }}</b>
-        <span>{{ a.desc }}</span>
+        <b>{{ _(a.title) }}</b>
+        <span>{{ _(a.desc) }}</span>
       </div>
     </div>
     {% endfor %}

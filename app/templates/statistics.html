@@ -3,16 +3,30 @@
 {% block title %}{{ _('Статистика') }}{% endblock %}
 {% block content %}
 <h1 class="h3 mb-1">{{ _('Статистика') }}</h1>
-<p class="text-muted mb-4">{{ _('Бүкіл платформа бойынша') if current_user.is_admin else _('Сіздің іс-шараларыңыз бойынша') }} {{ _('· деректер қорынан нақты уақытта есептеледі') }}</p>
+<p class="text-muted mb-4">{{ _('Бүкіл платформа бойынша') if current_user.is_admin else _('Сіздің іс-шараларыңыз бойынша') }} · {{ _('деректер қорынан нақты уақытта есептеледі') }}</p>
 <div class="row g-3 mb-4">
-  {% for value, label in [(summary.events_total, _('Іс-шаралар саны')), (summary.volunteers_total, _('Эріктілер саны')), (summary.registrations_total, _('Тіркелімдер саны')), (summary.attended_total, _('Қатысуы расталған')), (summary.fill_rate ~ '%', _('Толу көрсеткіші'))] %}
-    <div class="col-6 col-md-4 col-xl"><div class="stat-tile"><b>{{ value }}</b><span>{{ label }}</span></div></div>
+  {% for value, label in [(summary.events_total, 'Іс-шаралар саны'), (summary.volunteers_total, 'Эріктілер саны'), (summary.registrations_total, 'Тіркелімдер саны'), (summary.attended_total, 'Қатысуы расталған'), (summary.fill_rate ~ '%', 'Толу көрсеткіші')] %}
+    <div class="col-6 col-md-4 col-xl"><div class="stat-tile"><b>{{ value }}</b><span>{{ _(label) }}</span></div></div>
   {% endfor %}
 </div>
+
+<h2 class="h5 mb-3"><i class="bi bi-graph-up me-2"></i>{{ _('Кеңейтілген көрсеткіштер') }}</h2>
+<div class="row g-3 mb-4">
+  {% for value, label in [(extended.attendance_rate ~ '%', 'Қатысу пайызы'),
+                          (extended.waitlist_total, 'Күту тізімі'),
+                          (extended.avg_rating if extended.avg_rating is not none else '—', 'Орташа баға'),
+                          (extended.reviews_total, 'Пікірлер саны'),
+                          (extended.upcoming_total, 'Алдағы іс-шаралар'),
+                          (extended.past_total, 'Өткен іс-шаралар')] %}
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-tile"><b>{{ value }}</b><span>{{ _(label) }}</span></div></div>
+  {% endfor %}
+</div>
+
 <div class="row g-3 mb-4">
   <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Жалпы көрсеткіштер диаграммасы') }}" src="{{ url_for('statistics.chart', name='summary') }}"></div></div>
   <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Толу көрсеткіші диаграммасы') }}" src="{{ url_for('statistics.chart', name='fill') }}"></div></div>
-  <div class="col-12"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Іс-шаралар бойынша қатысушылар салыстыруы') }}" src="{{ url_for('statistics.chart', name='events') }}"></div></div>
+  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Санаттар бойынша диаграмма') }}" src="{{ url_for('statistics.chart', name='category') }}"></div></div>
+  <div class="col-lg-6"><div class="vp-card vp-card-pad chart-box"><img class="chart-img" alt="{{ _('Іс-шаралар бойынша қатысушылар салыстыруы') }}" src="{{ url_for('statistics.chart', name='events') }}"></div></div>
 </div>
 <h2 class="h5 mb-3">{{ _('Іс-шаралар бойынша кесте') }}</h2>
 {% if stats %}
@@ -22,6 +36,17 @@
     <tr><td class="fw-semibold">{{ s.title }}</td><td class="text-nowrap">{{ s.event_date | kz_date }}</td><td>{{ s.capacity }}</td><td>{{ s.registered }}</td><td>{{ s.attended }}</td><td>{{ s.fill_rate }}%</td></tr>
   {% endfor %}</tbody></table></div></div>
 {% else %}
-  <div class="vp-card">{{ m.empty('bar-chart', _('Статистика үшін деректер жоқ.')) }}</div>
+  <div class="vp-card">{{ m.empty('bar-chart', 'Статистика үшін деректер жоқ.') }}</div>
+{% endif %}
+
+<h2 class="h5 mt-4 mb-3">{{ _('Санаттар бойынша бөлініс') }}</h2>
+{% if extended.by_category %}
+<div class="vp-card"><div class="table-responsive"><table class="table vp-table">
+  <thead><tr><th>{{ _('Санат') }}</th><th>{{ _('Іс-шара саны') }}</th><th>{{ _('Тіркелген') }}</th></tr></thead>
+  <tbody>{% for c in extended.by_category %}
+    <tr><td class="fw-semibold">{{ _(c.label) }}</td><td>{{ c.events }}</td><td>{{ c.registrations }}</td></tr>
+  {% endfor %}</tbody></table></div></div>
+{% else %}
+  <div class="vp-card">{{ m.empty('bar-chart', 'Статистика үшін деректер жоқ.') }}</div>
 {% endif %}
 {% endblock %}

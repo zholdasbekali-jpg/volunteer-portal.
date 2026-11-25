@@ -29,7 +29,7 @@
       <div class="mb-4">
         <label class="form-label" for="role">{{ _('Мен —') }}</label>
         <select class="form-select" id="role" name="role">
-          {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if form.get('role') == value }}>{{ label }}</option>{% endfor %}
+          {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if form.get('role') == value }}>{{ _(label) }}</option>{% endfor %}
         </select>
       </div>
       <button class="btn btn-primary w-100" type="submit" data-loading="{{ _('Тіркелуде…') }}">{{ _('Тіркелу') }}</button>

@@ -7,7 +7,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from ..database import get_db, transaction
 from ..errors import Conflict, NotFound, PermissionDenied, ValidationError
 from .volunteer_service import new_code
-from ..models import ROLES, SELF_REGISTER_ROLES, ROLE_ADMIN, ROLE_VOLUNTEER
+from ..models import (APPROVAL_APPROVED, APPROVAL_PENDING, APPROVAL_STATUSES, LANG_CODES, ROLES,
+                      SELF_REGISTER_ROLES, ROLE_ADMIN, ROLE_ORGANIZER, ROLE_VOLUNTEER)
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}$")
 MIN_PASSWORD_LEN = 8
@@ -48,9 +49,11 @@ def register_user(full_name: str, email: str, password: str, role: str = ROLE_VO
         raise ValidationError("Бұл рөлмен тіркелуге болмайды.")
     try:
         with transaction() as db:
+            approval = APPROVAL_PENDING if role == ROLE_ORGANIZER else APPROVAL_APPROVED
             cur = db.execute(
-                "INSERT INTO users (full_name, email, password_hash, role, public_code) VALUES (?, ?, ?, ?, ?)",
-                (full_name, email, generate_password_hash(password), role, new_code(db)),
+                "INSERT INTO users (full_name, email, password_hash, role, approval, public_code)"
+                " VALUES (?, ?, ?, ?, ?, ?)",
+                (full_name, email, generate_password_hash(password), role, approval, new_code(db)),
             )
             return cur.lastrowid
     except sqlite3.IntegrityError:
@@ -87,13 +90,21 @@ def authenticate(email: str, password: str):
     return row
 
 
+def set_user_lang(user_id: int, lang: str) -> None:
+    """Пайдаланушының интерфейс тілін сақтайды (кіргеннен кейін және хаттар үшін қолданылады)."""
+    if lang not in LANG_CODES:
+        raise ValidationError("Белгісіз тіл.")
+    with transaction() as db:
+        db.execute("UPDATE users SET lang = ? WHERE id = ?", (lang, user_id))
+
+
 def get_user(user_id):
     return get_db().execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
 def list_users():
     return get_db().execute(
-        """SELECT u.id, u.full_name, u.email, u.role, u.created_at,
+        """SELECT u.id, u.full_name, u.email, u.role, u.approval, u.created_at,
                   (SELECT COUNT(*) FROM registrations r WHERE r.user_id = u.id) AS reg_count,
                   (SELECT COUNT(*) FROM events e WHERE e.organizer_id = u.id) AS event_count
            FROM users u ORDER BY u.id"""
@@ -114,7 +125,24 @@ def set_user_role(actor, user_id: int, new_role: str) -> None:
     with transaction() as db:
         if db.execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone() is None:
             raise NotFound("Пайдаланушы табылмады.")
-        db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
+        # Әкімші рөлді өзі беретіндіктен,organizer категориясы дереу мақұлдалады.
+        db.execute("UPDATE users SET role = ?, approval = ? WHERE id = ?",
+                   (new_role, APPROVAL_APPROVED, user_id))
+
+
+def set_approval(actor, user_id: int, value: str):
+    """Әкімші ұйымдастырушыны мақұлдайды/қабылдамайды. Жаңартылған пайдаланушыны қайтарады."""
+    _require_admin(actor)
+    if value not in APPROVAL_STATUSES:
+        raise ValidationError("Мақұлдау мәртебесі дұрыс емес.")
+    with transaction() as db:
+        row = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        if row is None:
+            raise NotFound("Пайдаланушы табылмады.")
+        if row["role"] != ROLE_ORGANIZER:
+            raise ValidationError("Мақұлдау тек ұйымдастырушыға қолданылады.")
+        db.execute("UPDATE users SET approval = ? WHERE id = ?", (value, user_id))
+        return db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
 def delete_user(actor, user_id: int) -> list:

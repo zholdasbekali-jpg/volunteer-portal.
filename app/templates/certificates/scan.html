@@ -6,7 +6,10 @@
   <h1 class="h3 mb-1">{{ _('Сертификатты тексеру') }}</h1>
   <p class="text-muted mb-4">{{ _('Сертификаттағы QR-кодты сканерлеңіз немесе нөмірін енгізіңіз: жүйе түпнұсқалығын тексереді. Іс-шарада ұйымдастырушы көрсеткен «қатысуды белгілеу» QR-ын да осы жерден сканерлеуге болады (алдымен сайтқа кіріңіз).') }}</p>
 
-  <div class="vp-card vp-card-pad mb-3" id="scanner" data-url="{{ url_for('certificates.scan') }}">
+  <div class="vp-card vp-card-pad mb-3" id="scanner" data-url="{{ url_for('certificates.scan') }}"
+       data-msg-denied="{{ _('Камераға рұқсат берілмеді немесе камера табылмады. Фотоны жүктеңіз немесе нөмірді қолмен енгізіңіз.') }}"
+       data-msg-noqr="{{ _('Суреттен QR-код табылмады. Анығырақ, жақынырақ түсіріп көріңіз немесе нөмірді қолмен енгізіңіз.') }}"
+       data-msg-readfail="{{ _('Суретті оқу мүмкін болмады.') }}">
     <h2 class="h6 mb-3"><i class="bi bi-camera"></i> {{ _('1. Камера арқылы') }}</h2>
     <video id="scan-video" class="scan-video mb-3" playsinline muted hidden></video>
     <div class="d-flex flex-wrap gap-2">
